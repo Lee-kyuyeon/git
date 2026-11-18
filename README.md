@@ -28,4 +28,4 @@ npm run typecheck
 ```
 
 ## 다음 단계
-docs/04의 1주차: `core`에 당일 조정, 세트 타입, 정체기 판정 추가 → Swift 패키지 이식 → SwiftUI 앱 골격 (iPhone 16 Pro 대상)
+docs/04의 1주차: `core`에 당일 조정, 세트 타입, 정체기 판정 추가 + `app/` PWA 골격과 GitHub Pages 배포 (iPhone 16 Pro 홈 화면 설치)
