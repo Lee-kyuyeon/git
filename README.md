@@ -17,7 +17,7 @@ UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 
 - `oneRepMax.ts`: Epley/Brzycki 1RM 추정
 - `recovery.ts`: 부위별 근육 회복도(지수 감쇠 피로 모델)
 - `warmup.ts`, `streak.ts`: 웜업 세트, 주간 연속 기록
-- `exercises.ts`: 종목 시드 데이터(44종)
+- `exercises.ts`: 종목 시드 데이터(43종)
 
 ```bash
 cd core
