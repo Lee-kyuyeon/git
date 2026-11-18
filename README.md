@@ -8,6 +8,7 @@
 | [01-competitor-analysis.md](docs/01-competitor-analysis.md) | 4개 앱 기능 매트릭스, 기능별 구현 추론, 리뷰 페인 포인트, 가격 모델 |
 | [02-product-spec.md](docs/02-product-spec.md) | 제품 정의, 차별점, MVP 범위, 화면 구조(IA), 사용자 흐름, 수익 모델 |
 | [03-architecture.md](docs/03-architecture.md) | 기술 스택, 데이터 모델, 핵심 알고리즘, 로드맵 |
+| [04-build-plan-planfit-base.md](docs/04-build-plan-planfit-base.md) | **개발 계획**: 플랜핏 뼈대 + 짐워크/플릭/데일리핏 장점 결합, 단계별 로드맵 |
 
 ## 핵심 로직: `core/`
 UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 없음).
@@ -27,4 +28,4 @@ npm run typecheck
 ```
 
 ## 다음 단계
-Expo(React Native) 앱 골격 → 온보딩 → 운동 진행 화면 (자세한 내용은 docs/03 로드맵 참고)
+docs/04의 1주차: `core`에 당일 조정, 세트 타입, 정체기 판정 추가 → Expo 앱 골격
