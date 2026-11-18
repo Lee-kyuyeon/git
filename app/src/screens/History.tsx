@@ -8,7 +8,7 @@ const DOW = ['월', '화', '수', '목', '금', '토', '일'];
 
 export function History() {
   const { data, update } = useStore();
-  const sessions = completedSessions(data);
+  const sessions = useMemo(() => completedSessions(data), [data.sessions]);
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [detail, setDetail] = useState<Session | null>(null);
   const exerciseIds = useMemo(() => [...new Set(sessions.flatMap((s) => s.exercises.map((e) => e.exerciseId)))], [sessions]);

@@ -194,6 +194,12 @@ test('무게 추천: 계획 세트를 다 못 채웠으면 증량하지 않음',
   assert.equal(r.weightKg, 60);
 });
 
+test('무게 추천: 맨몸(무게 0) 종목은 상한 달성해도 무게를 추천하지 않음', () => {
+  const r = recommendNext(bench, { ...plan, sets: 2 }, [{ weightKg: 0, reps: 12, rpe: 7 }, { weightKg: 0, reps: 12, rpe: 7 }]);
+  assert.equal(r.weightKg, 0);
+  assert.notEqual(r.action, 'increase');
+});
+
 test('무게 추천: 하체 컴파운드는 5kg 증량, 웜업은 무시', () => {
   const r = recommendNext(squat, { ...plan, exerciseId: 'bb_squat', sets: 2 }, [
     { weightKg: 40, reps: 8, isWarmup: true },

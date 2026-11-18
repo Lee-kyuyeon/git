@@ -15,11 +15,17 @@ export function useWakeLock(active: boolean) {
   useEffect(() => {
     if (!active || !('wakeLock' in navigator)) return;
     let lock: WakeLockSentinel | null = null;
-    const req = () => navigator.wakeLock.request('screen').then((l) => { lock = l; }).catch(() => {});
+    let cancelled = false;
+    const req = () => navigator.wakeLock.request('screen').then((l) => {
+      // 요청 중에 언마운트되면 바로 해제 (화면이 계속 켜져 있는 것 방지)
+      if (cancelled) l.release().catch(() => {});
+      else lock = l;
+    }).catch(() => {});
     req();
     const onVis = () => { if (document.visibilityState === 'visible') req(); };
     document.addEventListener('visibilitychange', onVis);
     return () => {
+      cancelled = true;
       document.removeEventListener('visibilitychange', onVis);
       lock?.release().catch(() => {});
     };

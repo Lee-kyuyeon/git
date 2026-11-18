@@ -110,6 +110,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [persist]);
 
   const replaceAll = useCallback((d: AppData) => {
+    // 대기 중인 이전 데이터 저장이 덮어쓰지 않도록 취소
+    window.clearTimeout(timer.current);
+    pending.current = null;
     setData(d);
     set(KEY, d).catch(() => {});
   }, []);

@@ -23,7 +23,8 @@ export function Me({ editProfile }: { editProfile: () => void }) {
         a.href = URL.createObjectURL(file);
         a.download = name;
         a.click();
-        URL.revokeObjectURL(a.href);
+        // 바로 해제하면 Safari 등에서 다운로드가 실패할 수 있음
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       }
       update((d) => ({ ...d, settings: { ...d.settings, lastBackupAt: Date.now() } }));
     } catch { /* 공유 취소 */ }

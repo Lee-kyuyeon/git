@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EXERCISE_BY_ID } from '@core';
 import { useStore, type LoggedSet, type Session } from '../store.tsx';
 import { NumInput, Sheet } from '../components/ui.tsx';
@@ -11,7 +11,10 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
   const { data, update } = useStore();
   const s = data.active!;
   const now = useNow(250);
-  const done = completedSessions(data);
+  // useNow(250)로 초당 4번 다시 그려지므로 전체 기록을 훑는 계산은 기록이 바뀔 때만
+  const done = useMemo(() => completedSessions(data), [data.sessions]);
+  const exIds = s.exercises.map((e) => e.exerciseId).join(',');
+  const prevByEx = useMemo(() => new Map(exIds.split(',').map((id) => [id, lastTwo(done, id)[0]])), [done, exIds]);
   const [rpeFor, setRpeFor] = useState<{ ei: number; si: number } | null>(null);
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
@@ -64,16 +67,18 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
   };
 
   // 길게 누르면 난이도 선택
-  const press = useRef<{ t?: number; long: boolean }>({ long: false });
+  const press = useRef<{ t?: number; longAt: number }>({ longAt: 0 });
   const onDown = (ei: number, si: number) => {
-    press.current.long = false;
-    press.current.t = window.setTimeout(() => { press.current.long = true; setRpeFor({ ei, si }); navigator.vibrate?.(15); }, 450);
-  };
-  const onUp = (ei: number, si: number) => {
-    window.clearTimeout(press.current.t);
-    if (!press.current.long) complete(ei, si);
+    press.current.t = window.setTimeout(() => { press.current.longAt = Date.now(); setRpeFor({ ei, si }); navigator.vibrate?.(15); }, 450);
   };
   const onCancel = () => window.clearTimeout(press.current.t);
+  // 완료는 click으로 처리해야 키보드·스위치 접근에서도 동작.
+  // 길게 누른 직후의 click만 무시 (시트 위에서 손을 떼면 click이 안 올 수 있어 플래그 대신 시각으로 판단)
+  const onClick = (ei: number, si: number) => {
+    window.clearTimeout(press.current.t);
+    if (Date.now() - press.current.longAt < 1000) return;
+    complete(ei, si);
+  };
 
   const elapsed = Math.floor((now - s.startedAt) / 1000);
   const totalWork = s.exercises.reduce((a, e) => a + e.sets.filter((x) => !x.isWarmup).length, 0);
@@ -112,7 +117,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
         {s.exercises.length === 0 && <div className="empty">아래 버튼으로 종목을 추가하세요</div>}
         {s.exercises.map((e, ei) => {
           const ex = EXERCISE_BY_ID.get(e.exerciseId)!;
-          const prev = lastTwo(done, e.exerciseId)[0];
+          const prev = prevByEx.get(e.exerciseId) ?? [];
           let workNo = 0;
           return (
             <div key={`${e.exerciseId}-${ei}`} className="ex-card">
@@ -138,7 +143,8 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
                     <NumInput decimal label={`${no}세트 무게`} value={st.weightKg} onChange={(n) => editValue(ei, si, 'weightKg', n)} />
                     <NumInput label={`${no}세트 횟수`} value={st.reps} onChange={(n) => editValue(ei, si, 'reps', Math.round(n))} />
                     <button className={`check ${st.done ? 'on' : ''}`} aria-label={`${no}세트 완료`} aria-pressed={st.done}
-                      onPointerDown={() => onDown(ei, si)} onPointerUp={() => onUp(ei, si)} onPointerLeave={onCancel} onPointerCancel={onCancel}
+                      onPointerDown={() => onDown(ei, si)} onPointerUp={onCancel} onPointerLeave={onCancel} onPointerCancel={onCancel}
+                      onClick={() => onClick(ei, si)}
                       onContextMenu={(ev) => ev.preventDefault()}>
                       ✓{st.done && st.rpe && !st.isWarmup && <span className="rpe-badge">{RPE_OPTIONS.find((o) => o.rpe === st.rpe)?.label}</span>}
                     </button>
@@ -207,8 +213,14 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
         onSwap={(newId) => {
           const ei = infoFor!.ei;
           patch((x) => ({
-            ...x, exercises: x.exercises.map((y, i) => i !== ei ? y
-              : buildExercise({ ...freePlan(newId, data.profile), sets: y.plan.sets, repMin: y.plan.repMin, repMax: y.plan.repMax, restSec: y.plan.restSec }, done)),
+            ...x, exercises: x.exercises.flatMap((y, i) => {
+              if (i !== ei) return [y];
+              const doneSets = y.sets.filter((st) => st.done);
+              const remaining = Math.max(1, y.sets.filter((st) => !st.done && !st.isWarmup).length);
+              const next = buildExercise({ ...freePlan(newId, data.profile), sets: remaining, repMin: y.plan.repMin, repMax: y.plan.repMax, restSec: y.plan.restSec }, done);
+              // 이미 끝낸 세트는 원래 종목에 남기고, 남은 세트만 새 종목으로 (기록 손실 방지)
+              return doneSets.length ? [{ ...y, sets: doneSets }, next] : [next];
+            }),
           }));
           setInfoFor(null);
         }} />

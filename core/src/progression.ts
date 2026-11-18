@@ -40,7 +40,7 @@ export function recommendNext(
     return { weightKg: 0, targetReps: plan.repMin, action: 'coldStart', reason: '이전 기록이 없습니다' };
   }
 
-  const { weight, minReps, avgRpe } = summarize(work);
+  const { weight, minReps, avgRpe, count } = summarize(work);
 
   if (minReps < plan.repMin) {
     const prev = workSets(previousSessionSets);
@@ -50,8 +50,12 @@ export function recommendNext(
     }
     return { weightKg: weight, targetReps: plan.repMin, action: 'repeat', reason: '한 번 미달은 컨디션 영향일 수 있어 같은 무게로 다시' };
   }
-  if (minReps >= plan.repMax && avgRpe <= 8.5 && work.length < plan.sets) {
-    return { weightKg: weight, targetReps: plan.repMax, action: 'repeat', reason: `지난번 ${work.length}/${plan.sets}세트만 해서 같은 무게로 다 채워 봐요` };
+  if (minReps >= plan.repMax && avgRpe <= 8.5 && count < plan.sets) {
+    return { weightKg: weight, targetReps: plan.repMax, action: 'repeat', reason: `지난번 ${count}/${plan.sets}세트만 해서 같은 무게로 다 채워 봐요` };
+  }
+  if (minReps >= plan.repMax && avgRpe <= 8.5 && weight === 0) {
+    // 맨몸(무게 0) 종목은 원판 단위로 올릴 수 없으니 무게를 추천하지 않음
+    return { weightKg: 0, targetReps: plan.repMax, action: 'repeat', reason: `모든 세트 ${plan.repMax}회 달성. 더 어려운 변형이나 중량을 더해 보세요` };
   }
   if (minReps >= plan.repMax && avgRpe <= 8.5) {
     return { weightKg: weight + step, targetReps: plan.repMin, action: 'increase', reason: `모든 세트 ${plan.repMax}회 달성, +${step}kg` };
@@ -76,14 +80,14 @@ function workSets(sets: SetLog[]): SetLog[] {
   return sets.filter((s) => !s.isWarmup && s.reps > 0);
 }
 
-function summarize(work: SetLog[]): { weight: number; minReps: number; avgRpe: number } {
+function summarize(work: SetLog[]): { weight: number; minReps: number; avgRpe: number; count: number } {
   // 가장 많이 사용한 무게를 기준 무게로 사용
   const weight = mode(work.map((s) => s.weightKg));
   const atWeight = work.filter((s) => s.weightKg === weight);
   const minReps = Math.min(...atWeight.map((s) => s.reps));
   const rpes = atWeight.map((s) => s.rpe).filter((r): r is number => r !== undefined);
   const avgRpe = rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : 8;
-  return { weight, minReps, avgRpe };
+  return { weight, minReps, avgRpe, count: atWeight.length };
 }
 
 function mode(nums: number[]): number {
