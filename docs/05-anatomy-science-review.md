@@ -159,7 +159,45 @@
 - 현재 신뢰도 구간(≤6 높음, ≤12 중간)은 근거와 일치합니다. ✅
 - 조치: 1RM 성장 그래프는 10회 이하 세트만 사용하고, 정체기 판정에는 주간 최고값의 이동평균을 씁니다.
 
-## 9. 반영할 작업 (04 계획 1주차에 추가)
+## 9. 성별·직업 맞춤
+
+### 9.1 성별: 프로그램 설계에는 반영하지 않음
+- **Roberts, Nuckols, Krieger (2020, JSCR)**: 같은 훈련에서 남녀의 상대적 근비대와 하체 근력 증가는 비슷하고, 상체 상대 근력은 여성이 더 크게 늘었습니다.
+- **Refalo 외 (2025, PeerJ, 베이지안 메타분석)**: 절대 근육 증가는 남성이 약간 크지만 상대 증가는 차이가 없습니다.
+- **Nuzzo 외 (Sports Med, 269개 연구 메타회귀)**: %1RM별 반복 가능 횟수에 성별 영향이 작습니다(가벼운 무게에서만 여성이 더 많이 반복한다는 소규모 연구는 있음).
+- 결론: 성별로 루틴 구조, 볼륨, 반복 범위를 바꿀 근거가 없습니다. 무게 차이는 기록과 RPE 기반 추천이 자동으로 맞춥니다.
+- 대신 **집중 부위(focusMuscles)** 를 본인이 고르게 합니다(예: 둔근, 어깨). 성별로 강조 부위를 미리 정하지 않습니다.
+- 성별은 온보딩에서 선택 입력으로 받되 통계·표시용으로만 씁니다. "성별을 바꿔도 프로그램이 같다"는 것을 테스트로 고정했습니다.
+
+### 9.2 직업: 직함 대신 "몸을 쓰는 방식"으로 반영
+| 입력 | 반영 | 근거 수준 |
+|---|---|---|
+| **좌식(사무직)** | 상부 등, 후면 삼각근, 승모 주간 목표 ×1.3 (최소 6세트) | 중간: 사무직 대상 직장 내 목·어깨 근력훈련 RCT에서 통증 감소 (Andersen 외 2012, 447명; 지도 여부와 무관하게 효과 2014, 351명). 짧게 자주 해도 효과 비슷 |
+| **서서 일함** | 기본값과 동일 | 근거 없음, 조정하지 않음 |
+| **육체노동** | 총 볼륨 ×0.8, 회복 시정수 ×1.15, 허리 부담 종목 약간 후순위 | 낮음: 작업 중 신체활동은 회복 부담을 키운다는 관찰("신체활동 역설") 수준 |
+| **교대·야간 근무** | 총 볼륨 ×0.85, 회복 시정수 ×1.15 | 낮음: 교대근무자는 피로와 불규칙한 일정이 장벽이며, 회복 지향 설계가 권장됨 |
+
+근거가 약한 항목(육체노동, 교대근무)은 보수적인 기본값으로만 쓰고, 실제 조정은 RPE와 통증 기록으로 개인별로 맞춰 갑니다.
+
+## 10. 반영 상태 (core 구현 완료)
+
+| 작업 | 상태 |
+|---|---|
+| `Muscle` 16개로 세분화, 종목 시드 66종으로 확장 및 재분류 | ✅ |
+| `lengthBias` 속성, 늘어난 위치 종목(시티드 레그컬, 오버헤드 익스텐션 등) | ✅ |
+| 볼륨 목표 기반 생성기, `weeklyTargets()`, `weeklyVolume()` | ✅ 주 3~6회 모두 주요 부위가 목표의 65~180%, 주 2회 이상 (테스트) |
+| 5회 분할: 상/하/푸시/풀/하체 | ✅ |
+| 부상: 제외 → 후순위 + `caution` + RPE 7 이하, `pain.ts` 통증 모니터링 | ✅ 무릎 불편 홈트에서 대퇴사두 0 → 6세트 |
+| 디로드: 2회 연속 미달 기준, 실패는 디로드 사유 아님, 목표별 `targetRpe` | ✅ |
+| 회복도 보정(경력, 직업, 교대, 실패, 늘어난 위치) | ✅ |
+| 1RM 추이는 10회 이하 세트만 (`bestE1RM`) | ✅ |
+| 직업(좌식/서서/육체노동, 교대근무), 집중 부위, 성별(설계 미반영) | ✅ |
+
+### 남은 한계
+- 주 3회 60분 전신 근비대는 시간이 부족해 대흉근·광배근·대퇴사두가 목표의 75~90%에 그칩니다. 앱에서 "시간을 75분으로 늘리거나 주 4회를 권장" 안내를 띄웁니다.
+- 둔근은 스쿼트와 힙힌지 양쪽에서 주동근으로 잡혀 목표보다 많이 집계됩니다(해부학적으로 타당하며 해롭지 않음).
+
+## 11. (이전) 반영할 작업 목록
 
 | 작업 | 파일 |
 |---|---|
@@ -174,6 +212,9 @@
 ---
 
 ## 참고 자료
+- 성별 차이: [Roberts 외 2020](https://pubmed.ncbi.nlm.nih.gov/32218059/), [Refalo 외 2025 PeerJ](https://peerj.com/articles/19042), [Nuzzo 외 메타회귀](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10933212/)
+- 사무직 목·어깨 근력훈련: [빈도·시간 RCT](https://www.ucviden.dk/en/publications/influence-of-frequency-and-duration-of-strength-training-for-effe/), [지도 여부 RCT](https://www.ucviden.dk/en/publications/effect-of-training-supervision-on-effectiveness-of-strength-train/), [2020 BMC](https://bmcsportsscimedrehabil.biomedcentral.com/track/pdf/10.1186/s13102-020-0158-0)
+- 교대근무와 운동: [체계적 고찰 PMC12920463](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920463/)
 - Pelland 외, 볼륨·빈도 메타회귀: [SportRxiv 프리프린트](https://sportrxiv.org/index.php/server/preprint/view/537), [Biolayne 요약](https://biolayne.com/reps/issue-31/the-king-of-volume-metas/), [Stronger by Science](https://www.strongerbyscience.com/one-set-muscle/)
 - 훈련 빈도 메타분석 (Schoenfeld 외 2016): [PMC6724585](https://pmc.ncbi.nlm.nih.gov/articles/PMC6724585), [Springer PDF](https://springerlink.bibliotecabuap.elogim.com/content/pdf/10.1007/s40279-016-0543-8.pdf)
 - 빈도 관련 개관: [Frontiers in Physiology 2021](https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2021.789403/epub), [PMC11235667](https://pmc.ncbi.nlm.nih.gov/articles/PMC11235667/)

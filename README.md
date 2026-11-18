@@ -9,17 +9,18 @@
 | [02-product-spec.md](docs/02-product-spec.md) | 제품 정의, 차별점, MVP 범위, 화면 구조(IA), 사용자 흐름, 수익 모델 |
 | [03-architecture.md](docs/03-architecture.md) | 기술 스택, 데이터 모델, 핵심 알고리즘, 로드맵 |
 | [04-build-plan-planfit-base.md](docs/04-build-plan-planfit-base.md) | **개발 계획**: 플랜핏 뼈대 + 짐워크/플릭/데일리핏 장점 결합, 단계별 로드맵 |
-| [05-anatomy-science-review.md](docs/05-anatomy-science-review.md) | 해부학·운동과학 근거로 루틴 생성, 추천, 회복도, 부상 처리 검토 + 개선 작업 |
+| [05-anatomy-science-review.md](docs/05-anatomy-science-review.md) | 해부학·운동과학 근거 검토, 성별·직업 맞춤 근거, 반영 상태 |
 
 ## 핵심 로직: `core/`
 UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 없음).
 
-- `routineGenerator.ts`: 목표, 주당 횟수, 시간, 보유 기구, 불편 부위로 주간 프로그램 자동 생성 + 대체 종목
+- `routineGenerator.ts`: **부위별 주간 볼륨 목표 기반** 프로그램 생성 (목표, 경력, 빈도, 시간, 기구, 불편 부위, 일하는 방식, 집중 부위) + 대체 종목
 - `progression.ts`: 더블 프로그레션 + RPE 보정 다음 무게 추천, 콜드스타트 보정
 - `oneRepMax.ts`: Epley/Brzycki 1RM 추정
-- `recovery.ts`: 부위별 근육 회복도(지수 감쇠 피로 모델)
+- `recovery.ts`: 부위별 추정 회복도(지수 감쇠, 경력·직업 보정)
+- `pain.ts`: 통증 모니터링 (불편 부위 종목을 빼지 않고 조절)
 - `warmup.ts`, `streak.ts`: 웜업 세트, 주간 연속 기록
-- `exercises.ts`: 종목 시드 데이터(43종)
+- `exercises.ts`: 종목 시드 데이터(66종, 16개 부위, 늘어난 위치 표시)
 
 ```bash
 cd core

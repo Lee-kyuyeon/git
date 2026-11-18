@@ -23,29 +23,32 @@ export function roundToPlate(weightKg: number, step: number): number {
  * 더블 프로그레션 + RPE 보정으로 다음 세션의 무게와 목표 반복 수를 추천합니다.
  *
  * - 모든 본세트가 repMax에 도달하고 평균 RPE ≤ 8.5이면 → 증량, 목표 반복은 repMin으로 리셋
- * - 한 세트라도 repMin에 못 미치거나 RPE 10(실패)이 2세트 이상이면 → 10% 디로드
- * - 모든 세트가 repMin 이상이면 → 같은 무게로 반복 +1
- * - 그 외 → 같은 무게, 같은 목표로 반복
+ * - repMax에 도달했지만 힘들었으면(RPE > 8.5) → 같은 무게로 한 번 더
+ * - repMin 미달: 직전 세션도 같은 무게 이상에서 미달이었으면 → 10% 디로드, 처음이면 → 같은 무게 유지
+ *   (실패 자체는 디로드 사유가 아님. 근비대는 실패에 가까울수록 오히려 유리: Robinson 외 2024)
+ * - 그 외 → 같은 무게로 반복 +1
+ *
+ * RPE 자가 보고는 실제보다 약 1회 여유를 적게 말하는 경향이 있어(Halperin 외), 증량 기준은 8.5로 둡니다.
  */
-export function recommendNext(ex: Exercise, plan: PlannedExercise, lastSets: SetLog[]): Recommendation {
-  const work = lastSets.filter((s) => !s.isWarmup && s.reps > 0);
+export function recommendNext(
+  ex: Exercise, plan: PlannedExercise, lastSets: SetLog[], previousSessionSets: SetLog[] = [],
+): Recommendation {
+  const work = workSets(lastSets);
   const step = incrementFor(ex);
 
   if (work.length === 0) {
     return { weightKg: 0, targetReps: plan.repMin, action: 'coldStart', reason: '이전 기록이 없습니다' };
   }
 
-  // 가장 많이 사용한 무게를 기준 무게로 사용
-  const weight = mode(work.map((s) => s.weightKg));
-  const atWeight = work.filter((s) => s.weightKg === weight);
-  const minReps = Math.min(...atWeight.map((s) => s.reps));
-  const rpes = atWeight.map((s) => s.rpe).filter((r): r is number => r !== undefined);
-  const avgRpe = rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : 8;
-  const failures = rpes.filter((r) => r >= 10).length;
+  const { weight, minReps, avgRpe } = summarize(work);
 
-  if (minReps < plan.repMin || failures >= 2) {
-    const w = roundToPlate(weight * 0.9, step);
-    return { weightKg: w, targetReps: plan.repMin, action: 'deload', reason: '목표 반복 미달 또는 실패가 잦아 10% 낮춥니다' };
+  if (minReps < plan.repMin) {
+    const prev = workSets(previousSessionSets);
+    const prevMissed = prev.length > 0 && summarize(prev).weight >= weight && summarize(prev).minReps < plan.repMin;
+    if (prevMissed) {
+      return { weightKg: roundToPlate(weight * 0.9, step), targetReps: plan.repMin, action: 'deload', reason: '2회 연속 목표 반복 미달이라 10% 낮춥니다' };
+    }
+    return { weightKg: weight, targetReps: plan.repMin, action: 'repeat', reason: '한 번 미달은 컨디션 영향일 수 있어 같은 무게로 다시' };
   }
   if (minReps >= plan.repMax && avgRpe <= 8.5) {
     return { weightKg: weight + step, targetReps: plan.repMin, action: 'increase', reason: `모든 세트 ${plan.repMax}회 달성, +${step}kg` };
@@ -64,6 +67,20 @@ export function recommendNext(ex: Exercise, plan: PlannedExercise, lastSets: Set
 export function coldStartWeight(ex: Exercise, plan: PlannedExercise, known1RM?: number): number {
   if (!known1RM) return 0;
   return roundToPlate(weightForReps(known1RM, plan.repMax + 2), incrementFor(ex));
+}
+
+function workSets(sets: SetLog[]): SetLog[] {
+  return sets.filter((s) => !s.isWarmup && s.reps > 0);
+}
+
+function summarize(work: SetLog[]): { weight: number; minReps: number; avgRpe: number } {
+  // 가장 많이 사용한 무게를 기준 무게로 사용
+  const weight = mode(work.map((s) => s.weightKg));
+  const atWeight = work.filter((s) => s.weightKg === weight);
+  const minReps = Math.min(...atWeight.map((s) => s.reps));
+  const rpes = atWeight.map((s) => s.rpe).filter((r): r is number => r !== undefined);
+  const avgRpe = rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : 8;
+  return { weight, minReps, avgRpe };
 }
 
 function mode(nums: number[]): number {

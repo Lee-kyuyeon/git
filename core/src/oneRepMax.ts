@@ -31,3 +31,14 @@ export function round(n: number, digits = 0): number {
   const f = 10 ** digits;
   return Math.round(n * f) / f;
 }
+
+/**
+ * 세트 목록에서 가장 높은 추정 1RM. 1RM 공식은 약 10회 이하에서 더 정확하므로
+ * 성장 그래프와 정체기 판정에는 10회 이하 세트만 씁니다. 해당 세트가 없으면 undefined.
+ */
+export function bestE1RM(sets: Array<{ weightKg: number; reps: number; isWarmup?: boolean }>, maxReps = 10): number | undefined {
+  const values = sets
+    .filter((s) => !s.isWarmup && s.reps > 0 && s.reps <= maxReps)
+    .map((s) => estimate1RM(s.weightKg, s.reps).value);
+  return values.length ? Math.max(...values) : undefined;
+}
