@@ -2,6 +2,7 @@
 
 > 이 문서는 02 기획서의 MVP 범위를 **대체**합니다.
 > **개인용 프로젝트**입니다. 판매하지 않으므로 결제, 구독, 무료/유료 구분은 설계하지 않습니다.
+> 대상 기기는 **iPhone 16 Pro** 한 대입니다. 네이티브 SwiftUI로 만듭니다.
 > **운영 비용 0원**이 조건입니다. 서버, 유료 API, 유료 클라우드를 쓰지 않고 모든 것이 폰 안에서 동작합니다.
 > 원칙: 사용자 흐름과 정보 구조는 플랜핏 방식(추천이 먼저, 기록은 그다음)을 따릅니다. 각 화면에 짐워크, 플릭, 데일리핏의 강점을 끼워 넣고, 플랜핏 리뷰에서 나온 약점은 처음부터 막습니다.
 > 디자인, 문구, 영상, 브랜드는 독자적으로 만듭니다. 가져오는 것은 **기능 구조**뿐입니다.
@@ -27,7 +28,7 @@
 | C. 운동 플레이어 | 세트/휴식 관리, 음성 코칭 | 세트 기록, 자동 휴식 타이머, 음성 안내 |
 | D. 운동 가이드 | 동작 설명, 대체 운동, 웜업/스트레칭 | 동작 요령, 흔한 실수, 대체 종목, 자동 웜업 세트 |
 | E. 기록 | 캘린더, 일지, 체중/인바디 | 캘린더, 세션 상세, 체중·체성분 |
-| F. 건강 연동 | Apple 건강 동기화 | HealthKit / Health Connect |
+| F. 건강 연동 | Apple 건강 동기화 | HealthKit |
 | G. 커뮤니티 | 팔로우, 공유, 댓글 | 친구, 기록 공유 이미지 (3단계) |
 | H. 워치 | Apple Watch | 3단계 |
 
@@ -106,24 +107,24 @@
 ### 1단계: MVP (8주), "플랜핏 뼈대 + 핵심 기록"
 | 주 | 작업 | 상태 |
 |---|---|---|
-| 0 | `core` 로직: 루틴 생성, 무게 추천, 1RM, 회복도, 웜업, 스트릭 | ✅ 완료 |
-| 1 | `core` 추가: 장소 프로필, **당일 조정**(`dailyAdjust`), 세트 타입, 종목 시드 150종 | |
-| 2 | Expo 앱 골격, 탭 구조, 로컬 DB(SQLite) 스키마 | |
+| 0 | `core`(TS 레퍼런스): 루틴 생성, 무게 추천, 1RM, 회복도, 웜업, 스트릭 | ✅ 완료 |
+| 1 | Swift 패키지 `LiftLogCore`로 이식 + 장소 프로필, **당일 조정**, 세트 타입, 정체기 판정 | |
+| 2 | Xcode 프로젝트, SwiftUI 탭 구조, SwiftData 모델, 내 폰에 첫 설치 | |
 | 3 | 온보딩 (모듈 A) + 프로그램 미리보기 | |
-| 4~5 | 운동 플레이어 (모듈 C): 빠른 입력, RPE, 휴식 타이머, 웜업, 메모, 대체 종목 | |
+| 4~5 | 운동 플레이어 (모듈 C): 빠른 입력, RPE, 휴식 타이머(다이내믹 아일랜드), 웜업, 메모, 대체 종목 | |
 | 6 | 홈 (모듈 B): 오늘의 운동, 스트릭, 회복도 요약, 자유 운동 | |
 | 7 | 기록 (모듈 E): 캘린더, 세션 상세, 부위별 볼륨, 체중 | |
-| 8 | 백업/복원, 내보내기, 내 폰에 설치 (8장) | |
+| 8 | 백업/복원, 내보내기 | |
 
 ### 2단계 (6주), "분석 + 로컬 AI"
 - 음성 세트 안내, 반복 카운트
 - 1RM 리포트, 정체기 분석, 회복도 상세
 - **온디바이스 AI 코치** (7장)
-- HealthKit / Health Connect 연동, 기록 공유 이미지, 유산소 기록
+- HealthKit 연동, 기록 공유 이미지, 유산소 기록
 
-### 3단계, "소셜 + 기기"
-- 친구, 팔로우, 볼륨 랭킹, 댓글
-- Apple Watch / Wear OS: 세트 체크, 휴식 진동, 심박
+### 3단계, "기기 확장"
+- Apple Watch: 세트 체크, 휴식 진동, 심박
+- (친구, 랭킹, 댓글은 서버가 필요해 무료 조건과 맞지 않으므로 제외)
 - 체성분 검사지 촬영 입력(OCR)
 
 
@@ -138,43 +139,63 @@
 | `LocationProfile` | 장소별 기구 세트(헬스장 A, 집) → 루틴 생성 시 선택 | 플랜핏 |
 
 
-## 7. 로컬 AI 코치 (무료, 오프라인)
+## 7. 로컬 AI 코치 (Apple Foundation Models, 무료·오프라인)
 
 ### 7.1 역할 분담
-작은 로컬 모델이 루틴 전체를 짜면 품질이 불안정합니다. 그래서 **추천은 규칙 기반 `core`가 하고, LLM은 사용자의 말을 조건(JSON)으로 바꾸는 일만** 합니다. 이 일은 1~4B 모델로도 충분합니다.
+작은 온디바이스 모델이 루틴 전체를 짜면 품질이 불안정합니다. 그래서 **추천은 규칙 기반 `LiftLogCore`가 하고, AI는 사용자의 말을 조건으로 바꾸는 일만** 합니다.
 
 ```
 "오늘 허리가 좀 뻐근하고 30분밖에 없어"
-   │  로컬 LLM (JSON 스키마로 출력 고정)
+   │  Foundation Models (@Generable 구조체로 출력 고정)
    ▼
-{ "injuries": ["lowerBack"], "minutes": 30, "skipMuscles": [], "intensity": "lower" }
-   │  core.generateProgram / dailyAdjust
+SessionConstraints(injuries: [.lowerBack], minutes: 30, skipMuscles: [], intensity: .lower)
+   │  LiftLogCore.generateProgram / dailyAdjust
    ▼
 허리 부담 종목(바벨 로우, RDL)을 빼고 30분 루틴으로 다시 생성 → "허리 부담 종목 2개를 뺐어요"
 ```
 
+```swift
+import FoundationModels
+
+@Generable
+struct SessionConstraints {
+    @Guide(description: "불편하거나 아픈 관절")
+    var injuries: [Joint]
+    @Guide(description: "오늘 가능한 운동 시간(분), 언급 없으면 nil")
+    var minutes: Int?
+    var skipMuscles: [Muscle]
+    var intensity: Intensity
+}
+
+let session = LanguageModelSession(instructions: "사용자의 말을 운동 조건으로 바꿔라.")
+let result = try await session.respond(to: userText, generating: SessionConstraints.self)
+```
+
 그 밖의 용도: 운동 후 한 줄 요약, 종목 질문 답변(종목 DB의 요령 텍스트를 함께 넣어 답하게 함).
 
-### 7.2 실행 방법 비교 (모두 무료)
-| 방법 | 지원 기기 | 장점 | 단점 |
+### 7.2 왜 Foundation Models인가
+| | Foundation Models | llama.cpp + 오픈 모델 |
+|---|---|---|
+| 비용 | 무료 | 무료 |
+| 다운로드 | 없음 (OS에 내장) | 1~3GB |
+| 구조화 출력 | `@Generable`로 타입 안전 | JSON 문법 제약 |
+| 조건 | Apple Intelligence 켜기 필요 | 없음 |
+
+iPhone 16 Pro는 Apple Intelligence를 지원하므로 Foundation Models가 가장 간단합니다.
+- `SystemLanguageModel.default.availability`로 사용 가능 여부를 확인합니다.
+- 꺼져 있거나 모델 준비 중이면 버튼형 조건 선택(아픈 부위, 시간)으로 동작합니다. 앱은 AI 없이도 완전히 쓸 수 있어야 합니다.
+
+## 8. 무료로 iPhone에 설치하기
+
+| 방법 | 필요한 것 | 비용 | 제약 |
 |---|---|---|---|
-| **llama.rn** (llama.cpp의 React Native 바인딩) + GGUF 모델 | iOS, Android 대부분 (RAM 6GB 이상 권장) | 기기 제약이 가장 적음, 모델 선택 자유, JSON 문법 제약 출력 지원 | 모델 파일 1~3GB 다운로드, Expo Go 불가(개발 빌드 필요) |
-| Apple Foundation Models (iOS 26) | Apple Intelligence 지원 iPhone (15 Pro 이상) | 다운로드 없음, 구조화 출력 지원 | iPhone 전용, 네이티브 모듈 작성 필요 |
-| Gemini Nano (Android ML Kit GenAI) | 일부 최신 Android 기기 | 다운로드 없음 | 지원 기기 한정 |
+| **Xcode 무료 서명** (Personal Team) | **Mac** + Xcode + Apple ID | 0원 | 앱이 **7일마다 만료**되어 Mac에 연결해 다시 설치해야 함. 기록 데이터는 재설치해도 유지됨 |
+| SideStore 등 재서명 도구 | 최초 설정 시 컴퓨터 | 0원 | 7일 갱신을 폰에서 처리. 설정이 다소 번거로움 |
+| Apple Developer Program | Mac | 연 $99 | 1년 유지, TestFlight 가능. **무료 조건이라 제외** |
 
-**권장**: llama.rn을 기본으로 씁니다. 모델은 1~4B급 소형 모델(예: Qwen3 1.7B/4B, Gemma 3 1B/4B의 Q4 양자화본)을 실제 폰에서 비교한 뒤 정합니다.
-- 모델 파일은 앱에 넣지 않고 첫 실행 때 와이파이로 받습니다(Hugging Face에서 무료).
-- 모델을 못 받았거나 기기가 느리면 AI 없이 버튼형 조건 선택(아픈 부위, 시간)으로 동작합니다. 앱은 AI 없이도 완전히 쓸 수 있어야 합니다.
-
-## 8. 무료로 폰에 설치하기
-
-| 폰 | 방법 | 비용 | 제약 |
-|---|---|---|---|
-| **Android** | APK를 빌드해 직접 설치 (`expo prebuild` 후 로컬 빌드, 또는 EAS 무료 플랜) | 0원 | 없음 |
-| **iPhone** | Mac + Xcode로 무료 Apple ID 개발 서명 후 설치 | 0원 | **Mac 필요**, 설치한 앱이 **7일마다 만료**되어 다시 설치해야 함 |
-| iPhone (참고) | Apple Developer Program | 연 $99 | 1년 유지, TestFlight 가능. 무료 조건이면 제외 |
-
-→ 무료 조건만 보면 **Android가 훨씬 편합니다.** iPhone이면 Mac이 있어야 하고 주기적인 재설치를 감수해야 합니다.
+- 무료 계정(Personal Team)에서는 iCloud(CloudKit), 푸시 알림 같은 일부 기능을 쓸 수 없습니다. 그래서 백업은 CloudKit 대신 **파일 내보내기**를 씁니다.
+- HealthKit과 Live Activity가 무료 계정에서 되는지는 첫 설치(2주차)에서 확인합니다. 안 되면 해당 기능만 끄고 진행합니다.
+- **Mac이 반드시 필요합니다.** iOS 앱 빌드와 설치는 Xcode에서만 가능합니다.
 
 ## 9. 리스크
 
@@ -182,5 +203,5 @@
 |---|---|
 | 운동 영상 제작 부담 | 일러스트 + 요령 텍스트로 시작, 필요하면 직접 촬영 |
 | 로컬 LLM 품질이 낮음 | 추천 자체는 규칙 기반(`core`)이 담당. LLM은 말을 JSON 조건으로 바꾸는 일만 하므로 작은 모델로 충분 |
-| 모델 파일 용량(1~3GB) | 첫 실행 시 와이파이에서 다운로드, 앱 번들에 넣지 않음 |
+| 7일마다 재설치 번거로움 | 데이터는 유지되므로 주 1회 Mac 연결 습관화, 또는 SideStore 사용 |
 | 기능 과다로 플릭 같은 가벼움 상실 | 플레이어 화면은 기본 상태에서 버튼 3개 이하 유지, 나머지는 길게 누르기나 시트로 |

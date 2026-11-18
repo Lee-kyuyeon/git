@@ -1,16 +1,23 @@
 # 03. 아키텍처 & 데이터 모델
 
-## 1. 기술 스택 (제안)
+## 1. 기술 스택
+
+> 대상 기기: **iPhone 16 Pro (iOS 26, Apple Intelligence 지원)** 한 대. Android는 고려하지 않습니다.
+> 그래서 크로스플랫폼(React Native) 대신 **네이티브 SwiftUI**로 갑니다. 이유:
+> 애플 내장 AI(Foundation Models), HealthKit, 잠금화면/다이내믹 아일랜드 휴식 타이머(Live Activity), Apple Watch가 모두 Swift 전용이거나 Swift에서 가장 쉽습니다.
 
 | 계층 | 선택 | 이유 |
 |---|---|---|
-| 앱 | React Native (Expo) + TypeScript | iOS/Android 동시 개발, 1인/소규모 팀에 적합 |
-| 로컬 DB | SQLite (expo-sqlite) + Drizzle ORM | 로컬 우선, 오프라인 기록 무손실 |
-| 상태 | Zustand | 운동 진행 상태 |
+| 앱 | **SwiftUI** (iOS 26) | 네이티브 기능을 브리지 없이 사용 |
+| 로컬 DB | SwiftData | 애플 기본 제공, 추가 비용·라이브러리 없음 |
 | 서버 | **없음** | 비용 0원. 모든 데이터와 계산은 폰 안에서 처리 |
-| 백업 | SQLite DB를 JSON으로 내보내 공유 시트로 iCloud Drive/Google Drive에 저장, 복원 시 가져오기 | 무료, 계정 불필요 |
-| 로컬 AI | llama.rn (llama.cpp) + 소형 GGUF 모델 | 오프라인, 무료. 04 문서 7장 참고 |
-| 핵심 로직 | `core/` 순수 TS 패키지 | 루틴 생성, 추천, 1RM, 회복도. UI와 분리해 테스트 |
+| 백업 | JSON 내보내기 → 파일 앱(iCloud Drive)에 저장, 가져오기로 복원 | 무료, 계정 불필요 |
+| 로컬 AI | **Apple Foundation Models** (온디바이스 약 3B 모델) | 무료, 오프라인, 다운로드 없음. `@Generable`로 구조화 출력 |
+| 휴식 타이머 | ActivityKit Live Activity + 로컬 알림 | 다이내믹 아일랜드와 잠금화면에 남은 시간 표시 |
+| 건강 | HealthKit | 운동 기록, 칼로리, 체중 저장 |
+| 핵심 로직 | `LiftLogCore` Swift 패키지 (현재 `core/` TS 구현을 이식) | UI와 분리, `swift test`로 테스트 |
+
+> `core/` TypeScript 구현은 알고리즘 명세와 테스트 케이스의 기준(레퍼런스)으로 남겨 두고, 같은 테스트를 Swift로 옮겨 결과가 같은지 확인합니다.
 
 ## 2. 도메인 모델
 
@@ -59,8 +66,8 @@ create index on set_log (exercise_id, completed_at);
 | 주차 | 산출물 |
 |---|---|
 | 1 | `core` 로직 + 테스트, 종목 시드 데이터(~150종) |
-| 2~3 | Expo 앱 골격, 온보딩, 루틴 화면 |
+| 2~3 | Xcode 프로젝트, SwiftUI 탭 골격, 온보딩, 루틴 화면 |
 | 4~5 | 운동 진행 화면, 휴식 타이머, 로컬 DB |
 | 6 | 기록/통계, 회복도 |
-| 7 | 백업/복원, 내보내기 |
+| 7 | 백업/복원, 내보내기, Live Activity 타이머 |
 | 8 | 백업, 내 폰에 설치 |
