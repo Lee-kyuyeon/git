@@ -5,15 +5,16 @@ import { Home } from './screens/Home.tsx';
 import { Workout } from './screens/Workout.tsx';
 import { Summary } from './screens/Summary.tsx';
 import { Routine } from './screens/Routine.tsx';
+import { Muscles } from './screens/Muscles.tsx';
 import { History } from './screens/History.tsx';
 import { Me } from './screens/Me.tsx';
 import { useNow } from './hooks.ts';
 
-type Tab = 'home' | 'routine' | 'history' | 'me';
+type Tab = 'home' | 'muscles' | 'history' | 'me';
 
 const TABS: Array<{ id: Tab; label: string; ico: string }> = [
-  { id: 'home', label: '오늘', ico: '🏠' },
-  { id: 'routine', label: '루틴', ico: '📋' },
+  { id: 'home', label: '퀘스트', ico: '📜' },
+  { id: 'muscles', label: '근육·도감', ico: '💪' },
   { id: 'history', label: '기록', ico: '📅' },
   { id: 'me', label: '나', ico: '👤' },
 ];
@@ -24,10 +25,11 @@ export function App() {
   const [workoutOpen, setWorkoutOpen] = useState(false);
   const [summaryId, setSummaryId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [routineOpen, setRoutineOpen] = useState(false);
 
   // 진행 중 운동이 있으면 앱을 다시 열었을 때 바로 이어서
   useEffect(() => { if (loaded && data.active) setWorkoutOpen(true); }, [loaded]);
-  useEffect(() => { window.scrollTo(0, 0); }, [tab, workoutOpen, summaryId, editing]);
+  useEffect(() => { window.scrollTo(0, 0); }, [tab, workoutOpen, summaryId, editing, routineOpen]);
 
   if (!loaded) return null;
   if (!data.profile || !data.program || editing) {
@@ -40,14 +42,20 @@ export function App() {
 
   return (
     <>
-      {tab === 'home' && <Home openWorkout={() => setWorkoutOpen(true)} goTab={setTab} />}
-      {tab === 'routine' && <Routine openWorkout={() => setWorkoutOpen(true)} editProfile={() => setEditing(true)} />}
-      {tab === 'history' && <History />}
-      {tab === 'me' && <Me editProfile={() => setEditing(true)} />}
+      {routineOpen ? (
+        <Routine onBack={() => setRoutineOpen(false)} openWorkout={() => { setRoutineOpen(false); setWorkoutOpen(true); }} editProfile={() => { setRoutineOpen(false); setEditing(true); }} />
+      ) : (
+        <>
+          {tab === 'home' && <Home openWorkout={() => setWorkoutOpen(true)} openRoutine={() => setRoutineOpen(true)} />}
+          {tab === 'muscles' && <Muscles />}
+          {tab === 'history' && <History />}
+          {tab === 'me' && <Me editProfile={() => setEditing(true)} openRoutine={() => setRoutineOpen(true)} />}
+        </>
+      )}
       {data.active && <MiniBar startedAt={data.active.startedAt} name={data.active.dayName} onOpen={() => setWorkoutOpen(true)} />}
       <nav className="tabbar">
         {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'on' : ''} aria-current={tab === t.id} onClick={() => setTab(t.id)}>
+          <button key={t.id} className={tab === t.id ? 'on' : ''} aria-current={tab === t.id} onClick={() => { setRoutineOpen(false); setTab(t.id); }}>
             <span className="ico">{t.ico}</span>{t.label}
           </button>
         ))}

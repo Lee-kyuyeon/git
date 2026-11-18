@@ -1,13 +1,12 @@
-import { useState } from 'react';
 import { ALL_MUSCLES, EXERCISE_BY_ID, estimateSeconds } from '@core';
 import { useStore } from '../store.tsx';
-import { ExerciseInfo } from '../components/ExerciseSheets.tsx';
+import { useGuide } from '../components/Guide.tsx';
 import { GOAL_KO, MUSCLE_KO } from '../labels.ts';
 import { startSession, thisWeekVolume, underCovered } from '../logic.ts';
 
-export function Routine({ openWorkout, editProfile }: { openWorkout: () => void; editProfile: () => void }) {
+export function Routine({ openWorkout, editProfile, onBack }: { openWorkout: () => void; editProfile: () => void; onBack: () => void }) {
   const { data, update } = useStore();
-  const [info, setInfo] = useState<string | null>(null);
+  const guide = useGuide();
   const program = data.program!;
   const profile = data.profile!;
   const week = thisWeekVolume(data);
@@ -17,7 +16,7 @@ export function Routine({ openWorkout, editProfile }: { openWorkout: () => void;
     <div className="screen">
       <div className="stack">
         <div className="row between">
-          <div className="title">내 루틴</div>
+          <div className="row"><button className="icon-btn" aria-label="뒤로" onClick={onBack}>‹</button><div className="title">전체 루틴</div></div>
           <button className="btn sm" onClick={editProfile}>다시 짜기</button>
         </div>
         <div className="small muted">
@@ -43,8 +42,8 @@ export function Routine({ openWorkout, editProfile }: { openWorkout: () => void;
               {d.exercises.map((e) => {
                 const ex = EXERCISE_BY_ID.get(e.exerciseId)!;
                 return (
-                  <button key={e.exerciseId} className="list-row" style={{ padding: '8px 0' }} onClick={() => setInfo(e.exerciseId)}>
-                    <span className="grow">{ex.nameKo} {e.caution && <span className="tag warn">가볍게</span>}</span>
+                  <button key={e.exerciseId} className="list-row" style={{ padding: '8px 0' }} onClick={() => guide.openExercise(e.exerciseId)}>
+                    <span className="grow">{ex.nameKo} <span className="muted small">ⓘ</span> {e.caution && <span className="tag warn">가볍게</span>}</span>
                     <span className="small muted num">{e.sets}세트 · {e.repMin}-{e.repMax}회</span>
                   </button>
                 );
@@ -74,7 +73,7 @@ export function Routine({ openWorkout, editProfile }: { openWorkout: () => void;
           <p className="tiny muted" style={{ marginTop: 10 }}>보조로 쓰인 부위는 0.5세트로 세요. 근육 성장에는 부위별 주간 세트 수가 가장 중요해요.</p>
         </div>
       </div>
-      <ExerciseInfo id={info} onClose={() => setInfo(null)} />
+      {guide.layer}
     </div>
   );
 }

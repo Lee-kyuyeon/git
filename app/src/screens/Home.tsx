@@ -1,23 +1,29 @@
 import { useState } from 'react';
-import { EXERCISE_BY_ID, estimateSeconds } from '@core';
+import { EXERCISE_BY_ID, REGIONS, estimateSeconds, rankOf, startOfWeek, weekCleared, type Region } from '@core';
 import { useStore } from '../store.tsx';
-import { RecoveryGrid, Sheet } from '../components/ui.tsx';
+import { Sheet } from '../components/ui.tsx';
+import { useGuide } from '../components/Guide.tsx';
 import { MUSCLE_KO } from '../labels.ts';
-import { level, nextDayIndex, recovery, sessionsThisWeek, startSession, streak } from '../logic.ts';
+import { nextDayIndex, recovery, startSession } from '../logic.ts';
+import { CLASS_INFO, dayRegionGain, playerProgress, questsForWeek } from '../game.ts';
 
-export function Home({ openWorkout, goTab }: { openWorkout: () => void; goTab: (t: 'me') => void }) {
+export function Home({ openWorkout, openRoutine }: { openWorkout: () => void; openRoutine: () => void }) {
   const { data, update } = useStore();
   const [pickDay, setPickDay] = useState(false);
+  const guide = useGuide();
   const program = data.program!;
+  const profile = data.profile!;
   const dayIdx = nextDayIndex(data);
   const day = program.days[dayIdx]!;
+  const player = playerProgress(data);
+  const rank = rankOf(player.level);
+  const quests = questsForWeek(data);
+  const cleared = weekCleared(quests);
+  const daysLeft = 7 - Math.floor((Date.now() - startOfWeek(new Date()).getTime()) / 864e5);
   const rec = recovery(data);
-  const lv = level(data);
-  const week = sessionsThisWeek(data);
-  const target = data.profile?.daysPerWeek ?? 3;
-  const st = streak(data);
-  const minutes = Math.round(day.exercises.reduce((a, e) => a + estimateSeconds(e), 0) / 60);
   const tired = day.focus.filter((m) => rec[m] < 60 && m !== 'forearms');
+  const gain = dayRegionGain(day.exercises);
+  const minutes = Math.round(day.exercises.reduce((a, e) => a + estimateSeconds(e), 0) / 60);
   const needBackup = data.sessions.length > 0 && (!data.settings.lastBackupAt || Date.now() - data.settings.lastBackupAt > 7 * 864e5);
 
   const start = (idx: number | null) => {
@@ -29,88 +35,96 @@ export function Home({ openWorkout, goTab }: { openWorkout: () => void; goTab: (
   return (
     <div className="screen">
       <div className="stack">
-        <div className="row between">
-          <div>
-            <div className="small muted">{new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}</div>
-            <div className="title">오늘의 운동</div>
-          </div>
-          <div className="tag accent">Lv.{lv.level}</div>
-        </div>
-
-        {/* 주간 목표와 연속 기록 */}
-        <div className="card">
+        {/* 플레이어 카드 */}
+        <div className="card hero">
           <div className="row between">
-            <div>
-              <div className="small muted">이번 주</div>
-              <div className="h2 num">{week} / {target}회</div>
+            <div className="row">
+              <span style={{ fontSize: 40 }}>{CLASS_INFO[profile.goal].emoji}</span>
+              <div>
+                <div className="h2">{CLASS_INFO[profile.goal].name}</div>
+                <div className="small muted">{rank.name} · 최고 연속 {player.bestStreak}주</div>
+              </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div className="small muted">연속 달성</div>
-              <div className="h2 num">🔥 {st}주</div>
-            </div>
+            <span className={`lv rank-${rank.color}`}>Lv.{player.level}</span>
           </div>
-          <div className="row" style={{ gap: 6, marginTop: 10 }}>
-            {Array.from({ length: target }, (_, i) => (
-              <div key={i} className="grow" style={{ height: 8, borderRadius: 4, background: i < week ? 'var(--accent)' : 'var(--surface-2)' }} />
-            ))}
-          </div>
+          <div className="xp-bar" style={{ marginTop: 12 }}><div style={{ width: `${(player.into / player.need) * 100}%` }} /></div>
+          <div className="tiny muted num" style={{ marginTop: 4 }}>{player.into} / {player.need} XP</div>
         </div>
 
-        {/* 오늘의 루틴 */}
+        {/* 오늘의 미션 */}
         {data.active ? (
-          <button className="card hero tap" onClick={openWorkout}>
-            <span className="tag accent">진행 중</span>
-            <div className="h2" style={{ marginTop: 8 }}>{data.active.dayName}</div>
-            <div className="small muted">이어서 하기 →</div>
+          <button className="card gold tap" onClick={openWorkout}>
+            <span className="tag">진행 중</span>
+            <div className="h2" style={{ marginTop: 6 }}>{data.active.dayName}</div>
+            <div className="small">이어서 하기 →</div>
           </button>
         ) : (
-          <div className="card hero">
+          <div className="card">
             <div className="row between">
-              <span className="tag accent">DAY {dayIdx + 1} / {program.days.length}</span>
-              <span className="small muted num">약 {minutes}분 · {day.exercises.length}종목</span>
+              <b>⚔️ 오늘의 미션</b>
+              <span className="tiny muted num">약 {minutes}분 · {day.exercises.length}종목</span>
             </div>
-            <div className="h2" style={{ marginTop: 8, fontSize: 22 }}>{day.name}</div>
-            <div className="stack" style={{ gap: 6, marginTop: 10 }}>
-              {day.exercises.map((e) => {
-                const ex = EXERCISE_BY_ID.get(e.exerciseId)!;
-                return (
-                  <div key={e.exerciseId} className="row between small">
-                    <span>{ex.nameKo} {e.caution && <span className="tag warn">가볍게</span>}</span>
-                    <span className="muted num">{e.sets}×{e.repMin}-{e.repMax}</span>
-                  </div>
-                );
-              })}
+            <div className="h2" style={{ marginTop: 6, fontSize: 22 }}>{day.name}</div>
+            <div className="row wrap" style={{ gap: 6, marginTop: 6 }}>
+              {(Object.keys(gain) as Region[]).filter((r) => (gain[r] ?? 0) >= 1).map((r) => (
+                <span key={r} className="tag accent">{REGIONS[r].name} +{Math.round(gain[r]!)}</span>
+              ))}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              {day.exercises.map((e) => (
+                <button key={e.exerciseId} className="list-row" style={{ padding: '8px 0' }} onClick={() => guide.openExercise(e.exerciseId)}>
+                  <span className="grow small">{EXERCISE_BY_ID.get(e.exerciseId)!.nameKo} {e.caution && <span className="tag warn">가볍게</span>}</span>
+                  <span className="tiny muted num">{e.sets}×{e.repMin}-{e.repMax}</span>
+                  <span className="muted small">ⓘ</span>
+                </button>
+              ))}
             </div>
             {tired.length > 0 && (
-              <div className="small" style={{ marginTop: 10, color: 'var(--warn)' }}>
-                {tired.map((m) => `${MUSCLE_KO[m]} ${rec[m]}%`).join(', ')} 회복 중이에요. 무게를 조금 낮춰도 좋아요.
-              </div>
+              <p className="small" style={{ marginTop: 8, color: 'var(--warn)', fontWeight: 700 }}>
+                {tired.map((m) => `${MUSCLE_KO[m]} 회복 ${rec[m]}%`).join(', ')} · 무게를 조금 낮춰도 좋아요
+              </p>
             )}
-            <button className="btn primary block" style={{ marginTop: 14 }} onClick={() => start(dayIdx)}>운동 시작</button>
+            <button className="btn primary block" style={{ marginTop: 12 }} onClick={() => start(dayIdx)}>미션 시작</button>
             <div className="row" style={{ marginTop: 8 }}>
-              <button className="btn sm grow" onClick={() => setPickDay(true)}>다른 날 하기</button>
-              <button className="btn sm grow" onClick={() => start(null)}>자유 운동</button>
+              <button className="btn sm grow" onClick={() => setPickDay(true)}>다른 미션</button>
+              <button className="btn sm grow" onClick={() => start(null)}>자유 훈련</button>
+              <button className="btn sm grow" onClick={openRoutine}>전체 루틴</button>
             </div>
           </div>
         )}
 
-        {/* 회복도 */}
+        {/* 주간 퀘스트 */}
         <div className="card">
-          <div className="row between" style={{ marginBottom: 10 }}>
-            <b>근육 회복도</b>
-            <span className="tiny muted">최근 7일 기록으로 추정</span>
+          <div className="row between">
+            <b>📜 이번 주 퀘스트</b>
+            <span className={`tag ${cleared ? 'good' : ''}`}>{cleared ? '클리어!' : `${daysLeft}일 남음`}</span>
           </div>
-          <RecoveryGrid values={rec} compact />
+          <div style={{ marginTop: 6 }}>
+            {quests.map((q) => (
+              <div key={q.id} className={`quest ${q.done ? 'done' : ''}`}>
+                <span className="box">{q.done ? '✓' : ''}</span>
+                <div className="grow">
+                  <div className="row between">
+                    <span className="small bold q-title">{q.title}</span>
+                    <span className="tiny muted num">{Math.min(q.progress, q.target)}/{q.target}</span>
+                  </div>
+                  {!q.done && <div className="xp-bar accent" style={{ height: 8, marginTop: 4 }}><div style={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }} /></div>}
+                </div>
+                <span className="tag gold">+{q.xp}</span>
+              </div>
+            ))}
+          </div>
+          <p className="tiny muted" style={{ marginTop: 6 }}>출석 + 부위 퀘스트 4개를 깨면 주간 클리어 (+200XP)</p>
         </div>
 
         {needBackup && (
-          <button className="card tap small" onClick={() => goTab('me')}>
-            💾 마지막 백업 후 7일이 지났어요. 기록은 이 폰에만 있어서 백업 파일을 저장해 두면 안전해요 →
-          </button>
+          <div className="card flat small">
+            💾 마지막 백업 후 7일이 지났어요. '나' 탭에서 백업 파일을 저장해 두세요.
+          </div>
         )}
       </div>
 
-      <Sheet open={pickDay} onClose={() => setPickDay(false)} title="어떤 날을 할까요?">
+      <Sheet open={pickDay} onClose={() => setPickDay(false)} title="어떤 미션을 할까요?">
         <div className="stack">
           {program.days.map((d, i) => (
             <button key={i} className="option" onClick={() => start(i)}>
@@ -122,6 +136,7 @@ export function Home({ openWorkout, goTab }: { openWorkout: () => void; goTab: (
           ))}
         </div>
       </Sheet>
+      {guide.layer}
     </div>
   );
 }

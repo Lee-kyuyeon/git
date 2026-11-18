@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { EXERCISE_BY_ID } from '@core';
+import { EXERCISE_BY_ID, setXp } from '@core';
 import { useStore, type LoggedSet, type Session } from '../store.tsx';
 import { NumInput, Sheet } from '../components/ui.tsx';
-import { ExerciseInfo, ExercisePicker } from '../components/ExerciseSheets.tsx';
+import { ExerciseDetail, ExercisePicker } from '../components/ExerciseSheets.tsx';
+import { sessionXp } from '../game.ts';
+import { MUSCLE_KO } from '../labels.ts';
 import { JOINT_KO, RPE_OPTIONS } from '../labels.ts';
 import { buildExercise, completedSessions, fmtKg, freePlan, lastTwo } from '../logic.ts';
 import { beep, speak, unlockAudio, useNow, useWakeLock } from '../hooks.ts';
@@ -21,6 +23,8 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
   const [infoFor, setInfoFor] = useState<{ ei: number; id: string } | null>(null);
   const [picker, setPicker] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [pop, setPop] = useState<{ k: number; text: string } | null>(null);
+  const xpNow = sessionXp(s).total;
   const alerted = useRef<number | undefined>(undefined);
   useWakeLock(true);
 
@@ -61,7 +65,16 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
     const e = s.exercises[ei]!;
     const st = e.sets[si]!;
     if (st.done && rpe === undefined) { patchSet(ei, si, { done: false, rpe: undefined }); return; }
-    patchSet(ei, si, { done: true, rpe: rpe ?? st.rpe ?? 8 });
+    const finalRpe = rpe ?? st.rpe ?? 8;
+    patchSet(ei, si, { done: true, rpe: finalRpe });
+    const ex = EXERCISE_BY_ID.get(e.exerciseId);
+    if (ex && !st.isWarmup && !st.done) {
+      const gained = setXp({ exercise: ex, rpe: finalRpe });
+      const total = Object.values(gained).reduce((a, b) => a + (b ?? 0), 0);
+      const k = Date.now();
+      setPop({ k, text: `+${total} XP · ${ex.primary.map((m) => MUSCLE_KO[m]).join('·')}` });
+      window.setTimeout(() => setPop((p) => (p?.k === k ? null : p)), 900);
+    }
     const isLast = si === e.sets.length - 1 && ei === s.exercises.length - 1;
     if (!isLast) startRest(st.isWarmup ? 60 : e.plan.restSec);
   };
@@ -106,7 +119,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
           <button className="icon-btn" aria-label="최소화" onClick={onMinimize}>⌄</button>
           <div style={{ textAlign: 'center' }}>
             <div className="bold">{s.dayName}</div>
-            <div className="small muted num">{mmss(elapsed)} · {doneWork}/{totalWork}세트</div>
+            <div className="small muted num">{mmss(elapsed)} · {doneWork}/{totalWork}세트 · <b style={{ color: 'var(--gold)' }}>+{xpNow} XP</b></div>
           </div>
           <button className="btn sm primary" onClick={() => setConfirmEnd(true)}>완료</button>
         </div>
@@ -209,7 +222,9 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
         </div>
       </Sheet>
 
-      <ExerciseInfo id={infoFor?.id ?? null} profile={data.profile} onClose={() => setInfoFor(null)}
+      {pop && <div key={pop.k} className="xp-pop">{pop.text}</div>}
+
+      <ExerciseDetail id={infoFor?.id ?? null} onClose={() => setInfoFor(null)}
         onSwap={(newId) => {
           const ei = infoFor!.ei;
           patch((x) => ({

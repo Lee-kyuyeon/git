@@ -276,3 +276,62 @@ test('주간 스트릭: 진행 중인 주는 미달이어도 끊기지 않음', 
   assert.equal(weeklyStreak(sessions, 3, now), 2);
   assert.equal(weeklyStreak([...sessions, d(10, 18), d(10, 18)], 3, now), 3);
 });
+
+// ── 게임화 ──
+import { ACHIEVEMENTS, levelFromXp, muscleXp, rankOf, setXp, weekCleared, weeklyQuests, xpToNext } from '../src/index.ts';
+
+test('XP: 주동근 10, 보조근 5, 쉬운 세트(RPE<7) 절반, 웜업 0', () => {
+  assert.deepEqual(setXp({ exercise: bench }), { chest: 10, triceps: 5, frontDelts: 5 });
+  assert.equal(setXp({ exercise: bench, rpe: 6 }).chest, 5);
+  assert.equal(setXp({ exercise: bench, rpe: 10 }).chest, 10);
+  assert.deepEqual(setXp({ exercise: bench, isWarmup: true }), {});
+  assert.equal(muscleXp([{ exercise: bench }, { exercise: bench }]).chest, 20);
+});
+
+test('레벨: 경계값과 랭크', () => {
+  assert.deepEqual(levelFromXp(0), { level: 1, into: 0, need: 100 });
+  assert.equal(levelFromXp(99).level, 1);
+  assert.equal(levelFromXp(100).level, 2);
+  assert.equal(levelFromXp(100 + xpToNext(2)).level, 3);
+  assert.equal(rankOf(1).name, '입문');
+  assert.equal(rankOf(12).name, '중급');
+});
+
+test('주간 퀘스트: 목표는 프로그램 주간 목표에서, 진행도는 이번 주 볼륨에서', () => {
+  const program = generateProgram(gymProfile);
+  const zero = Object.fromEntries(ALL_MUSCLES.map((m) => [m, 0])) as Record<Muscle, number>;
+  const empty = weeklyQuests(program, 4, { volume: zero, sessions: 0, prs: 0 });
+  assert.equal(empty.length, 7);
+  assert.ok(empty.every((q) => !q.done));
+  const chestQ = empty.find((q) => q.id === 'vol-chest')!;
+  assert.equal(chestQ.target, Math.round(program.weeklyTargets.chest));
+
+  const full = { ...zero };
+  for (const m of ALL_MUSCLES) full[m] = program.weeklyTargets[m];
+  const qs = weeklyQuests(program, 4, { volume: full, sessions: 4, prs: 0 });
+  assert.ok(qs.filter((q) => q.kind === 'volume').every((q) => q.done));
+  assert.ok(weekCleared(qs));
+  assert.ok(!weekCleared(weeklyQuests(program, 4, { volume: full, sessions: 3, prs: 0 })));
+});
+
+test('업적: id 중복 없음, 조건 판정', () => {
+  assert.equal(new Set(ACHIEVEMENTS.map((a) => a.id)).size, ACHIEVEMENTS.length);
+  const s = { sessions: 1, totalSets: 0, prs: 0, bestStreak: 0, maxMuscleLevel: 1, clearedWeeks: 0, painFreeLight: 0 };
+  assert.deepEqual(ACHIEVEMENTS.filter((a) => a.test(s)).map((a) => a.id), ['first']);
+});
+
+// ── 가이드 콘텐츠 ──
+import { GUIDES, MUSCLE_INFO } from '../src/index.ts';
+
+test('가이드: 모든 종목에 준비·동작·자극·실수가 있음', () => {
+  for (const e of EXERCISES) {
+    const g = GUIDES[e.id];
+    assert.ok(g, `가이드 없음: ${e.id}`);
+    assert.ok(g.setup.length && g.steps.length && g.feel && g.mistakes.length, e.id);
+  }
+  assert.deepEqual(Object.keys(GUIDES).filter((id) => !EXERCISE_BY_ID.has(id)), []);
+});
+
+test('근육 정보: 16개 부위 모두', () => {
+  for (const m of ALL_MUSCLES) assert.ok(MUSCLE_INFO[m].anatomy && MUSCLE_INFO[m].actions.length, m);
+});

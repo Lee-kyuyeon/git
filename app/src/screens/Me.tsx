@@ -3,21 +3,23 @@ import { PAIN_DISCLAIMER } from '@core';
 import { EMPTY, useStore, type AppData } from '../store.tsx';
 import { Toggle } from '../components/ui.tsx';
 import { EXPERIENCE_KO, GOAL_KO, JOINT_KO, MUSCLE_KO, WORK_KO } from '../labels.ts';
-import { completedSessions, fmtDate, level } from '../logic.ts';
+import { completedSessions, fmtDate } from '../logic.ts';
+import { CLASS_INFO, achievements, playerProgress } from '../game.ts';
 
-export function Me({ editProfile }: { editProfile: () => void }) {
+export function Me({ editProfile, openRoutine }: { editProfile: () => void; openRoutine: () => void }) {
   const { data, update, replaceAll } = useStore();
   const p = data.profile!;
   const fileRef = useRef<HTMLInputElement>(null);
-  const lv = level(data);
+  const lv = playerProgress(data);
+  const badges = achievements(data);
 
   const exportBackup = async () => {
     const json = JSON.stringify(data);
-    const name = `liftlog-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const name = `liftquest-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([json], name, { type: 'application/json' });
     try {
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'LiftLog 백업' });
+        await navigator.share({ files: [file], title: 'LiftQuest 백업' });
       } else {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(file);
@@ -54,17 +56,31 @@ export function Me({ editProfile }: { editProfile: () => void }) {
         <div className="card hero">
           <div className="row between">
             <div>
-              <div className="h2">Lv.{lv.level}</div>
-              <div className="small muted">운동 {completedSessions(data).length}회 완료</div>
+              <div className="h2">{CLASS_INFO[p.goal].name} Lv.{lv.level}</div>
+              <div className="small muted">운동 {completedSessions(data).length}회 · 주간 클리어 {lv.clearedWeeks}회 · 개인 기록 {lv.prs}회</div>
             </div>
-            <span style={{ fontSize: 32 }}>{GOAL_KO[p.goal].emoji}</span>
+            <span style={{ fontSize: 36 }}>{CLASS_INFO[p.goal].emoji}</span>
           </div>
-          <div className="bar" style={{ marginTop: 10 }}><div style={{ width: `${lv.progress * 100}%` }} /></div>
+          <div className="xp-bar" style={{ marginTop: 10 }}><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div>
         </div>
 
         <div className="card">
+          <div className="row between"><b>🏅 업적</b><span className="tiny muted">{badges.filter((b) => b.unlocked).length}/{badges.length}</span></div>
+          <div className="badges" style={{ marginTop: 10 }}>
+            {badges.map((b) => (
+              <div key={b.id} className={`badge ${b.unlocked ? 'on' : 'locked'}`} title={`${b.name}: ${b.desc}`} aria-label={`${b.name} ${b.unlocked ? '달성' : '미달성'}: ${b.desc}`}>{b.emoji}</div>
+            ))}
+          </div>
+          <div className="stack" style={{ gap: 4, marginTop: 10 }}>
+            {badges.filter((b) => !b.unlocked).slice(0, 2).map((b) => <div key={b.id} className="tiny muted">다음 목표 · {b.emoji} {b.name}: {b.desc}</div>)}
+          </div>
+        </div>
+
+        <button className="btn block" onClick={openRoutine}>📋 전체 루틴 · 이번 주 부위별 운동량</button>
+
+        <div className="card">
           <div className="row between" style={{ marginBottom: 6 }}><b>내 정보</b><button className="btn sm" onClick={editProfile}>수정</button></div>
-          {row('목표', GOAL_KO[p.goal].label)}
+          {row('클래스', `${CLASS_INFO[p.goal].name} (${GOAL_KO[p.goal].label})`)}
           {row('경력', EXPERIENCE_KO[p.experience].label)}
           {row('빈도', `주 ${p.daysPerWeek}회 · ${p.minutesPerSession}분`)}
           {row('일하는 방식', `${WORK_KO[p.workActivity ?? 'standing'].label}${p.shiftWork ? ' · 교대근무' : ''}`)}

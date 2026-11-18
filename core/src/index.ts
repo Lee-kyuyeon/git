@@ -7,3 +7,6 @@ export * from './recovery.ts';
 export * from './warmup.ts';
 export * from './streak.ts';
 export * from './pain.ts';
+export * from './game.ts';
+export * from './muscleInfo.ts';
+export * from './exerciseGuide.ts';
