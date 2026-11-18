@@ -188,8 +188,14 @@ test('무게 추천: 상한 달성 + 여유 → 증량', () => {
   assert.equal(r.targetReps, 8);
 });
 
+test('무게 추천: 계획 세트를 다 못 채웠으면 증량하지 않음', () => {
+  const r = recommendNext(bench, plan, [{ weightKg: 60, reps: 12, rpe: 8 }, { weightKg: 60, reps: 12, rpe: 8 }]);
+  assert.equal(r.action, 'repeat');
+  assert.equal(r.weightKg, 60);
+});
+
 test('무게 추천: 하체 컴파운드는 5kg 증량, 웜업은 무시', () => {
-  const r = recommendNext(squat, { ...plan, exerciseId: 'bb_squat' }, [
+  const r = recommendNext(squat, { ...plan, exerciseId: 'bb_squat', sets: 2 }, [
     { weightKg: 40, reps: 8, isWarmup: true },
     { weightKg: 100, reps: 12, rpe: 7 }, { weightKg: 100, reps: 12, rpe: 8 },
   ]);

@@ -22,7 +22,7 @@ export function roundToPlate(weightKg: number, step: number): number {
 /**
  * 더블 프로그레션 + RPE 보정으로 다음 세션의 무게와 목표 반복 수를 추천합니다.
  *
- * - 모든 본세트가 repMax에 도달하고 평균 RPE ≤ 8.5이면 → 증량, 목표 반복은 repMin으로 리셋
+ * - 계획한 세트를 모두 하고, 모두 repMax에 도달하고, 평균 RPE ≤ 8.5이면 → 증량, 목표 반복은 repMin으로 리셋
  * - repMax에 도달했지만 힘들었으면(RPE > 8.5) → 같은 무게로 한 번 더
  * - repMin 미달: 직전 세션도 같은 무게 이상에서 미달이었으면 → 10% 디로드, 처음이면 → 같은 무게 유지
  *   (실패 자체는 디로드 사유가 아님. 근비대는 실패에 가까울수록 오히려 유리: Robinson 외 2024)
@@ -49,6 +49,9 @@ export function recommendNext(
       return { weightKg: roundToPlate(weight * 0.9, step), targetReps: plan.repMin, action: 'deload', reason: '2회 연속 목표 반복 미달이라 10% 낮춥니다' };
     }
     return { weightKg: weight, targetReps: plan.repMin, action: 'repeat', reason: '한 번 미달은 컨디션 영향일 수 있어 같은 무게로 다시' };
+  }
+  if (minReps >= plan.repMax && avgRpe <= 8.5 && work.length < plan.sets) {
+    return { weightKg: weight, targetReps: plan.repMax, action: 'repeat', reason: `지난번 ${work.length}/${plan.sets}세트만 해서 같은 무게로 다 채워 봐요` };
   }
   if (minReps >= plan.repMax && avgRpe <= 8.5) {
     return { weightKg: weight + step, targetReps: plan.repMin, action: 'increase', reason: `모든 세트 ${plan.repMax}회 달성, +${step}kg` };

@@ -10,6 +10,7 @@
 | [03-architecture.md](docs/03-architecture.md) | 기술 스택, 데이터 모델, 핵심 알고리즘, 로드맵 |
 | [04-build-plan-planfit-base.md](docs/04-build-plan-planfit-base.md) | **개발 계획**: 플랜핏 뼈대 + 짐워크/플릭/데일리핏 장점 결합, 단계별 로드맵 |
 | [05-anatomy-science-review.md](docs/05-anatomy-science-review.md) | 해부학·운동과학 근거 검토, 성별·직업 맞춤 근거, 반영 상태 |
+| [06-ui-ux.md](docs/06-ui-ux.md) | 화면별로 어떤 앱의 어떤 장점을 가져왔는지, 디자인 원칙, 검증 |
 
 ## 핵심 로직: `core/`
 UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 없음).
@@ -29,5 +30,20 @@ npm test         # Node 22.18+ 내장 테스트 러너
 npm run typecheck
 ```
 
+## 웹앱: `app/`
+아이폰 홈 화면에 설치해 쓰는 PWA입니다(Vite + React + TypeScript, 서버 없음, 데이터는 폰에 저장).
+
+```bash
+cd app
+npm install
+npm run dev      # 개발 서버
+npm run build    # 배포용 빌드 (app/dist)
+```
+
+### 아이폰에 설치하기 (무료, Mac 불필요)
+1. GitHub 저장소 **Settings → Pages → Source**를 **GitHub Actions**로 설정합니다(최초 1회).
+2. 이 브랜치를 `main`에 병합하면 `.github/workflows/deploy.yml`이 테스트 후 자동 배포합니다.
+3. 아이폰 Safari로 `https://lee-kyuyeon.github.io/git/` 접속 → 공유 버튼 → **홈 화면에 추가**.
+
 ## 다음 단계
-docs/04의 1주차: `core`에 당일 조정, 세트 타입, 정체기 판정 추가 + `app/` PWA 골격과 GitHub Pages 배포 (iPhone 16 Pro 홈 화면 설치)
+실제 폰에서 사용해 보며 피드백 반영 → 당일 회복도 기반 루틴 조정, 세트 타입(탑/백오프), 정체기 판정, 동작 일러스트
