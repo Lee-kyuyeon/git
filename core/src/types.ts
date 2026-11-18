@@ -41,6 +41,10 @@ export interface Exercise {
   /** 하체 컴파운드처럼 증량 폭이 큰 종목 */
   lowerBody: boolean;
   cues: string[];
+  /** 설명 출처 (외부 데이터에서 가져온 경우) */
+  source?: string;
+  /** true면 자동 루틴에는 넣지 않고 도감·직접 추가로만 사용 (특수·보조·고난도 종목) */
+  catalogOnly?: boolean;
 }
 
 /**

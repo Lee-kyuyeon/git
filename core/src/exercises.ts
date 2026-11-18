@@ -1,4 +1,5 @@
 import type { Exercise } from './types.ts';
+import { EXTRA_SEEDS } from './exercisesExtra.ts';
 
 type Seed = Omit<Exercise, 'lowerBody' | 'cues'> & { cues?: string[] };
 
@@ -88,7 +89,7 @@ const seeds: Seed[] = [
   { id: 'farmer_carry', nameKo: '파머스 워크', nameEn: "Farmer's Carry", primary: ['forearms', 'traps'], secondary: ['core'], equipment: ['dumbbell'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
 ];
 
-export const EXERCISES: Exercise[] = seeds.map((s) => ({
+export const EXERCISES: Exercise[] = [...seeds, ...EXTRA_SEEDS].map((s) => ({
   ...s,
   cues: s.cues ?? [],
   lowerBody: s.primary.some((m) => LOWER.has(m)),

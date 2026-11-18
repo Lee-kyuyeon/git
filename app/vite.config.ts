@@ -10,6 +10,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // 3D 근육 이미지(약 6MB)는 처음부터 다 받지 않고, 본 것만 저장해 오프라인에서도 보이게
+      workbox: {
+        runtimeCaching: [{
+          urlPattern: /\/(exercises3d|muscles3d)\/.*\.webp$/,
+          handler: 'CacheFirst',
+          options: { cacheName: 'anatomy-3d', expiration: { maxEntries: 300 } },
+        }],
+      },
       includeAssets: ['icons/apple-touch-icon.png', 'icons/icon.svg'],
       manifest: {
         name: 'LiftQuest',

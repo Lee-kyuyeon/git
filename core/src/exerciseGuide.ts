@@ -1,3 +1,5 @@
+import { EXTRA_GUIDES } from './exercisesExtra.ts';
+
 /**
  * 종목별 수행 가이드. 일반적으로 통용되는 운동 지도 요령을 정리한 것이며 의료 조언이 아닙니다.
  * - setup: 준비 자세
@@ -16,7 +18,7 @@ export interface ExerciseGuide {
 
 export const DEFAULT_BREATH = '내리거나 늘어날 때 들이마시고, 힘을 줄 때 내쉰다. 무거운 세트는 숨을 잠깐 참아 배에 힘을 준 채 반복';
 
-export const GUIDES: Record<string, ExerciseGuide> = {
+const BASE_GUIDES: Record<string, ExerciseGuide> = {
   // ── 가슴 ──
   bb_bench_press: {
     setup: ['벤치에 누워 눈이 바 바로 아래 오게', '어깨너비보다 조금 넓게 잡고 견갑골을 모아 내린 채 가슴을 든다', '발은 바닥에 단단히'],
@@ -434,3 +436,5 @@ export const GUIDES: Record<string, ExerciseGuide> = {
     breath: '걸으며 일정하게 쉰다',
   },
 };
+
+export const GUIDES: Record<string, ExerciseGuide> = { ...BASE_GUIDES, ...EXTRA_GUIDES };

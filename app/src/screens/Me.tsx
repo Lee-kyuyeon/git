@@ -117,6 +117,16 @@ export function Me({ editProfile, openRoutine }: { editProfile: () => void; open
 
         <div className="card small muted">{PAIN_DISCLAIMER}</div>
 
+        <details className="card small">
+          <summary className="bold">출처 · 라이선스</summary>
+          <ul className="bullet" style={{ marginTop: 8 }}>
+            <li>3D 근육 이미지: BodyParts3D, Copyright © 2008 Life Science Integrated Database Center (DBCLS), CC BY-SA 2.1 JP 라이선스. 모델을 단순화·렌더링한 이미지도 같은 라이선스로 공개합니다.</li>
+            <li>2D 근육 지도: react-native-body-highlighter © 2022 ELABBASSI Hicham, MIT 라이선스</li>
+            <li>추가 종목 58개의 동작 설명: free-exercise-db (퍼블릭 도메인, Unlicense)를 번역·보강</li>
+            <li>그 밖의 종목 설명·근육 정보·루틴 로직: LiftQuest 자체 작성</li>
+          </ul>
+        </details>
+
         <button className="btn ghost block" style={{ color: 'var(--bad)' }} onClick={() => {
           if (confirm('모든 기록과 설정을 지울까요? 되돌릴 수 없어요.')) replaceAll(EMPTY);
         }}>모든 데이터 지우기</button>
