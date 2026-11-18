@@ -1,0 +1,3 @@
+BodyParts3D, Copyright (c) 2008 Life Science Integrated Database Center (DBCLS)
+licensed under CC Attribution-Share Alike 2.1 Japan: https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+These images are renders of simplified BodyParts3D meshes and are distributed under the same license.

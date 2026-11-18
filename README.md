@@ -21,8 +21,8 @@ UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 
 - `recovery.ts`: 부위별 추정 회복도(지수 감쇠, 경력·직업 보정)
 - `pain.ts`: 통증 모니터링 (불편 부위 종목을 빼지 않고 조절)
 - `warmup.ts`, `streak.ts`: 웜업 세트, 주간 연속 기록
-- `exercises.ts`: 종목 시드 데이터(66종, 16개 부위, 늘어난 위치 표시)
-- `exerciseGuide.ts`, `muscleInfo.ts`: 66개 종목 수행 가이드(준비·동작·호흡·자극 부위·흔한 실수), 16개 근육 해부학 정보
+- `exercises.ts`: 종목 데이터 124종 (자체 66 + free-exercise-db 번역 58), 16개 부위, 늘어난 위치 표시
+- `exerciseGuide.ts`, `exercisesExtra.ts`, `muscleInfo.ts`: 124개 종목 수행 가이드(준비·동작·호흡·자극 부위·흔한 실수), 16개 근육 해부학 정보
 - `game.ts`: 부위별 XP·레벨, 주간 퀘스트(근거 기반 볼륨 목표), 업적
 
 ```bash
@@ -49,3 +49,6 @@ npm run build    # 배포용 빌드 (app/dist)
 
 ## 다음 단계
 실제 폰에서 사용해 보며 피드백 반영 → 당일 회복도 기반 루틴 조정, 세트 타입(탑/백오프), 정체기 판정, 동작 일러스트
+
+## 출처 · 라이선스
+3D 근육 이미지(BodyParts3D, CC BY-SA 2.1 JP), 2D 근육 지도(MIT), 추가 종목 설명(퍼블릭 도메인)의 출처는 [ATTRIBUTION.md](ATTRIBUTION.md)를 보세요.

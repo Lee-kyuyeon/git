@@ -31,7 +31,7 @@ export function Muscles() {
             <button className={view === 'level' ? 'on' : ''} onClick={() => setView('level')}>성장 레벨</button>
             <button className={view === 'recovery' ? 'on' : ''} onClick={() => setView('recovery')}>피로도</button>
           </div>
-          <BodyMap heat={heat} onTap={guide.openMuscle} size={200} />
+          <BodyMap heat={heat} onTap={guide.openMuscle} size={290} />
           <p className="tiny muted" style={{ textAlign: 'center', marginTop: 6 }}>
             {view === 'level' ? '진할수록 많이 키운 부위' : '진할수록 아직 회복 중 (최근 7일 기록으로 추정)'} · 부위를 누르면 도감
           </p>

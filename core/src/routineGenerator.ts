@@ -155,7 +155,7 @@ function scoreExercise(
   s -= jointConflicts(e, profile).length * 5;
   // 육체노동자는 허리 부담 종목을 약간 후순위 (일과에서 이미 허리를 씀)
   if (profile.workActivity === 'manual' && e.stressedJoints.includes('lowerBack')) s -= 1.5;
-  s -= weeklyUse * 2.5;
+  s -= weeklyUse * 4;
   return s;
 }
 
@@ -165,7 +165,7 @@ export function generateProgram(profile: Profile, pool: Exercise[] = EXERCISES):
   const split = chooseSplit(profile.daysPerWeek);
   const templates = SPLITS[split];
   const dayTemplates = Array.from({ length: profile.daysPerWeek }, (_, d) => templates[d % templates.length]!);
-  const available = pool.filter((e) => isAvailable(e, profile));
+  const available = pool.filter((e) => !e.catalogOnly && isAvailable(e, profile));
   const targets = weeklyTargets(profile);
   const scheme = SCHEME[profile.goal];
   const budgetSec = profile.minutesPerSession * 60;

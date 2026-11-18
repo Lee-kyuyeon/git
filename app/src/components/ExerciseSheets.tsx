@@ -4,6 +4,7 @@ import {
   type Muscle, type Profile,
 } from '@core';
 import { Chips, LineChart, Sheet } from './ui.tsx';
+import { Anatomy3D } from './Anatomy3D.tsx';
 import { BodyMap } from './BodyMap.tsx';
 import { JOINT_KO, LENGTH_KO, MUSCLE_KO } from '../labels.ts';
 import { useStore } from '../store.tsx';
@@ -83,7 +84,8 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
           )}
 
           <div className="card">
-            <BodyMap primary={ex.primary} secondary={ex.secondary} size={170} onTap={onOpenMuscle} />
+            <Anatomy3D src={`exercises3d/${ex.id}.webp`} alt={`${ex.nameKo} 자극 근육 3D`}
+              fallback={<BodyMap primary={ex.primary} secondary={ex.secondary} size={170} onTap={onOpenMuscle} />} />
             <div className="stack" style={{ gap: 6, marginTop: 10 }}>
               {ex.primary.map((m) => (
                 <button key={m} className="row" style={{ textAlign: 'left' }} onClick={() => onOpenMuscle?.(m)}>
@@ -160,7 +162,10 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
               ))}
             </div>
           )}
-          <p className="tiny muted">일반적인 운동 요령이며 의료 조언이 아니에요. 통증이 있으면 멈추세요.</p>
+          <p className="tiny muted">
+            일반적인 운동 요령이며 의료 조언이 아니에요. 통증이 있으면 멈추세요.
+            {ex.source ? ' 동작 설명은 free-exercise-db(퍼블릭 도메인)를 번역·보강했어요.' : ''} 3D 근육: BodyParts3D © DBCLS (CC BY-SA 2.1 JP)
+          </p>
         </div>
       )}
     </Sheet>
@@ -187,7 +192,10 @@ export function MuscleDetail({ muscle, onClose, onOpenExercise, level }: {
             {level && <span className="lv">Lv.{level.level}</span>}
           </div>
           {level && <div className="xp-bar"><div style={{ width: `${(level.into / level.need) * 100}%` }} /></div>}
-          <div className="card"><BodyMap primary={[muscle]} size={150} /></div>
+          <div className="card">
+            <Anatomy3D src={`muscles3d/${muscle}.webp`} alt={`${MUSCLE_KO[muscle]} 3D`} fallback={<BodyMap primary={[muscle]} size={150} />} />
+            <p className="tiny muted" style={{ textAlign: 'center' }}>3D 모델: BodyParts3D © DBCLS (CC BY-SA 2.1 JP)</p>
+          </div>
           <div className="card">
             <b>구성</b>
             <ul className="bullet small" style={{ marginTop: 6 }}>{info.parts.map((p) => <li key={p}>{p}</li>)}</ul>
