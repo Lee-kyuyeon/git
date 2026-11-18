@@ -1,0 +1,18 @@
+{
+  "name": "@liftlog/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "운동 루틴 생성, 무게 추천, 1RM, 회복도 등 핵심 도메인 로직",
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p ."
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
