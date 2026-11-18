@@ -6,11 +6,10 @@
 |---|---|---|
 | 앱 | React Native (Expo) + TypeScript | iOS/Android 동시 개발, 1인/소규모 팀에 적합 |
 | 로컬 DB | SQLite (expo-sqlite) + Drizzle ORM | 로컬 우선, 오프라인 기록 무손실 |
-| 상태 | Zustand + TanStack Query | 운동 진행 상태는 Zustand, 서버 데이터는 Query |
-| 백엔드 | Supabase (Postgres + Auth + Storage) | 소셜 로그인, 익명 → 계정 승격, RLS |
-| 동기화 | 변경 로그 기반 push/pull (`updated_at`, `deleted_at` 소프트 삭제) | 단순하고 충돌이 적음(대부분 단일 사용자 데이터) |
-| 결제 | RevenueCat | 구독, 체험, A/B 가격 테스트 |
-| 분석 | PostHog | 퍼널, 리텐션 |
+| 상태 | Zustand | 운동 진행 상태 |
+| 서버 | **없음** | 비용 0원. 모든 데이터와 계산은 폰 안에서 처리 |
+| 백업 | SQLite DB를 JSON으로 내보내 공유 시트로 iCloud Drive/Google Drive에 저장, 복원 시 가져오기 | 무료, 계정 불필요 |
+| 로컬 AI | llama.rn (llama.cpp) + 소형 GGUF 모델 | 오프라인, 무료. 04 문서 7장 참고 |
 | 핵심 로직 | `core/` 순수 TS 패키지 | 루틴 생성, 추천, 1RM, 회복도. UI와 분리해 테스트 |
 
 ## 2. 도메인 모델
@@ -63,5 +62,5 @@ create index on set_log (exercise_id, completed_at);
 | 2~3 | Expo 앱 골격, 온보딩, 루틴 화면 |
 | 4~5 | 운동 진행 화면, 휴식 타이머, 로컬 DB |
 | 6 | 기록/통계, 회복도 |
-| 7 | Supabase 동기화, 로그인 |
-| 8 | RevenueCat, 베타(TestFlight) |
+| 7 | 백업/복원, 내보내기 |
+| 8 | 백업, 내 폰에 설치 |
