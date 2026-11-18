@@ -1,4 +1,4 @@
-# LiftLog (가칭): 운동 루틴·기록 앱
+# LiftQuest: 근육마다 레벨업하는 운동 퀘스트 + 운동·근육 도감
 
 국내 운동 앱 4종(플랜핏, 짐워크, 플릭, 데일리핏)을 **공개 정보 기반으로 기능 역설계**하고, 그 결과로 기획한 독자적인 운동 앱 프로젝트입니다.
 
@@ -10,7 +10,7 @@
 | [03-architecture.md](docs/03-architecture.md) | 기술 스택, 데이터 모델, 핵심 알고리즘, 로드맵 |
 | [04-build-plan-planfit-base.md](docs/04-build-plan-planfit-base.md) | **개발 계획**: 플랜핏 뼈대 + 짐워크/플릭/데일리핏 장점 결합, 단계별 로드맵 |
 | [05-anatomy-science-review.md](docs/05-anatomy-science-review.md) | 해부학·운동과학 근거 검토, 성별·직업 맞춤 근거, 반영 상태 |
-| [06-ui-ux.md](docs/06-ui-ux.md) | 화면별로 어떤 앱의 어떤 장점을 가져왔는지, 디자인 원칙, 검증 |
+| [06-ui-ux.md](docs/06-ui-ux.md) | 화면별 UX 설계, v2 게임화·도감 개편, 디자인 원칙, 검증 |
 
 ## 핵심 로직: `core/`
 UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 없음).
@@ -22,6 +22,8 @@ UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 
 - `pain.ts`: 통증 모니터링 (불편 부위 종목을 빼지 않고 조절)
 - `warmup.ts`, `streak.ts`: 웜업 세트, 주간 연속 기록
 - `exercises.ts`: 종목 시드 데이터(66종, 16개 부위, 늘어난 위치 표시)
+- `exerciseGuide.ts`, `muscleInfo.ts`: 66개 종목 수행 가이드(준비·동작·호흡·자극 부위·흔한 실수), 16개 근육 해부학 정보
+- `game.ts`: 부위별 XP·레벨, 주간 퀘스트(근거 기반 볼륨 목표), 업적
 
 ```bash
 cd core
