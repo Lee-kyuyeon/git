@@ -9,6 +9,7 @@
 | [02-product-spec.md](docs/02-product-spec.md) | 제품 정의, 차별점, MVP 범위, 화면 구조(IA), 사용자 흐름, 수익 모델 |
 | [03-architecture.md](docs/03-architecture.md) | 기술 스택, 데이터 모델, 핵심 알고리즘, 로드맵 |
 | [04-build-plan-planfit-base.md](docs/04-build-plan-planfit-base.md) | **개발 계획**: 플랜핏 뼈대 + 짐워크/플릭/데일리핏 장점 결합, 단계별 로드맵 |
+| [05-anatomy-science-review.md](docs/05-anatomy-science-review.md) | 해부학·운동과학 근거로 루틴 생성, 추천, 회복도, 부상 처리 검토 + 개선 작업 |
 
 ## 핵심 로직: `core/`
 UI와 분리된 순수 TypeScript 도메인 로직입니다(런타임 의존성 없음).
