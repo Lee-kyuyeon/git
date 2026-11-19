@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useStore } from './store.tsx';
-import { Onboarding } from './screens/Onboarding.tsx';
+const Onboarding = lazy(() => import('./screens/Onboarding.tsx').then((m) => ({ default: m.Onboarding })));
 import { Home } from './screens/Home.tsx';
 import { Workout } from './screens/Workout.tsx';
-import { Summary } from './screens/Summary.tsx';
-import { Routine } from './screens/Routine.tsx';
-import { Muscles } from './screens/Muscles.tsx';
-import { History } from './screens/History.tsx';
-import { Me } from './screens/Me.tsx';
+const Summary = lazy(() => import('./screens/Summary.tsx').then((m) => ({ default: m.Summary })));
+const Routine = lazy(() => import('./screens/Routine.tsx').then((m) => ({ default: m.Routine })));
+const Muscles = lazy(() => import('./screens/Muscles.tsx').then((m) => ({ default: m.Muscles })));
+const History = lazy(() => import('./screens/History.tsx').then((m) => ({ default: m.History })));
+const Me = lazy(() => import('./screens/Me.tsx').then((m) => ({ default: m.Me })));
 import { useNow } from './hooks.ts';
 
 type Tab = 'home' | 'muscles' | 'history' | 'me';
@@ -32,6 +32,9 @@ export function App() {
   useEffect(() => { window.scrollTo(0, 0); }, [tab, workoutOpen, summaryId, editing, routineOpen]);
 
   if (!loaded) return null;
+  return <Suspense fallback={<div className="screen" aria-busy="true" />}>{render()}</Suspense>;
+
+  function render() {
   if (!data.profile || !data.program || editing) {
     return <Onboarding editing={editing} onDone={() => { setEditing(false); setTab('home'); }} />;
   }
@@ -62,6 +65,7 @@ export function App() {
       </nav>
     </>
   );
+  }
 }
 
 function MiniBar({ startedAt, name, onOpen }: { startedAt: number; name: string; onOpen: () => void }) {

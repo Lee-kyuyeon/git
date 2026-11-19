@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ALL_MUSCLES, EXERCISE_BY_ID, levelFromXp, muscleXp, type Muscle } from '@core';
 import { useStore, type Session } from '../store.tsx';
 import { MUSCLE_KO } from '../labels.ts';
@@ -12,6 +13,8 @@ const FEELINGS: Array<{ v: NonNullable<Session['feeling']>; label: string; emoji
 
 export function Summary({ id, onClose }: { id: string; onClose: () => void }) {
   const { data, update } = useStore();
+  // 훅은 조건부 return 위에 (이 세션을 뺀 데이터로 '완료 전' 퀘스트·업적 비교)
+  const dataBefore = useMemo(() => ({ ...data, sessions: data.sessions.filter((x) => x.id !== id) }), [data, id]);
   const all = completedSessions(data);
   const idx = all.findIndex((s) => s.id === id);
   const s = all[idx];
@@ -29,7 +32,6 @@ export function Summary({ id, onClose }: { id: string; onClose: () => void }) {
   const topMuscles = (Object.entries(gained.byMuscle) as Array<[Muscle, number]>).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   // 이번 세션으로 새로 완료된 퀘스트·업적
-  const dataBefore = { ...data, sessions: data.sessions.filter((x) => x.id !== id) };
   const qBefore = new Set(questsForWeek(dataBefore).filter((q) => q.done).map((q) => q.id));
   const newQuests = questsForWeek(data).filter((q) => q.done && !qBefore.has(q.id));
   const aBefore = new Set(achievements(dataBefore).filter((a) => a.unlocked).map((a) => a.id));

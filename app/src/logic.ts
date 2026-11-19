@@ -95,8 +95,20 @@ export function performedSets(sessions: Session[], sinceMs: number): PerformedSe
   return out;
 }
 
+const recCache = new WeakMap<AppData, { bucket: number; v: Record<Muscle, number> }>();
+
+/** 추정 회복도. 같은 데이터면 5분 단위로 결과를 재사용 */
 export function recovery(d: AppData): Record<Muscle, number> {
   const now = Date.now();
+  const bucket = Math.floor(now / 3e5);
+  const hit = recCache.get(d);
+  if (hit && hit.bucket === bucket) return hit.v;
+  const v = computeRecovery(d, now);
+  recCache.set(d, { bucket, v });
+  return v;
+}
+
+function computeRecovery(d: AppData, now: number): Record<Muscle, number> {
   return recoveryByMuscle(performedSets(completedSessions(d), now - 7 * 864e5), new Date(now), d.profile ?? {});
 }
 

@@ -1,7 +1,14 @@
+import { useEffect, useState } from 'react';
 import type { Muscle } from '@core';
 import { MUSCLE_KO } from '../labels.ts';
 import { useStore } from '../store.tsx';
-import { BODY, type BodySide } from './bodyPaths.ts';
+import type { BodySide } from './bodyTypes.ts';
+
+type Body = Record<'front' | 'back', BodySide>;
+// 체형 데이터(약 36~43KB)는 처음 그릴 때 한 번만 불러와 재사용
+const loaded: Partial<Record<'male' | 'female', Body>> = {};
+const load = (sex: 'male' | 'female'): Promise<Body> =>
+  (sex === 'female' ? import('./bodyFemale.ts') : import('./bodyMale.ts')).then((m) => (loaded[sex] = m.default));
 
 /*
  * 인체 근육 지도 (앞/뒤). 경로 데이터는 react-native-body-highlighter (MIT).
@@ -16,7 +23,14 @@ export function BodyMap({ primary = [], secondary = [], heat, onTap, size = 150 
   size?: number;
 }) {
   const { data } = useStore();
-  const body = BODY[data.profile?.sex === 'female' ? 'female' : 'male'];
+  const sex = data.profile?.sex === 'female' ? 'female' : 'male';
+  const [body, setBody] = useState<Body | undefined>(loaded[sex]);
+  useEffect(() => {
+    let alive = true;
+    if (loaded[sex]) setBody(loaded[sex]);
+    else load(sex).then((b) => { if (alive) setBody(b); });
+    return () => { alive = false; };
+  }, [sex]);
 
   const fill = (ms: Muscle[]) => {
     if (!ms.length) return 'var(--body)';
@@ -45,6 +59,7 @@ export function BodyMap({ primary = [], secondary = [], heat, onTap, size = 150 
       <figcaption className="tiny muted">{label}</figcaption>
     </figure>
   );
+  if (!body) return <div style={{ height: size + 18 }} aria-busy="true" />;
   return (
     <div className="row" style={{ justifyContent: 'center', gap: 12 }}>
       {view(body.front, '앞')}

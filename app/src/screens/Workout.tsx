@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { EXERCISE_BY_ID, setXp } from '@core';
 import { useStore, type LoggedSet, type Session } from '../store.tsx';
 import { NumInput, Sheet } from '../components/ui.tsx';
-import { ExerciseDetail, ExercisePicker } from '../components/ExerciseSheets.tsx';
+const ExerciseDetail = lazy(() => import('../components/ExerciseSheets.tsx').then((m) => ({ default: m.ExerciseDetail })));
+const ExercisePicker = lazy(() => import('../components/ExerciseSheets.tsx').then((m) => ({ default: m.ExercisePicker })));
 import { sessionXp } from '../game.ts';
 import { MUSCLE_KO } from '../labels.ts';
 import { JOINT_KO, RPE_OPTIONS } from '../labels.ts';
@@ -224,6 +225,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
 
       {pop && <div key={pop.k} className="xp-pop">{pop.text}</div>}
 
+      <Suspense fallback={null}>
       <ExerciseDetail id={infoFor?.id ?? null} onClose={() => setInfoFor(null)}
         onSwap={(newId) => {
           const ei = infoFor!.ei;
@@ -244,6 +246,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
         patch((x) => ({ ...x, exercises: [...x.exercises, buildExercise(freePlan(id, data.profile), done)] }));
         setPicker(false);
       }} />
+      </Suspense>
 
       <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} title={doneWork < totalWork ? `${totalWork - doneWork}세트가 남았어요` : '운동을 마칠까요?'}>
         <div className="stack">
