@@ -5,6 +5,7 @@ import {
 } from '@core';
 import { Chips, LineChart, Sheet } from './ui.tsx';
 import { Anatomy3D } from './Anatomy3D.tsx';
+import { MyVideos } from './MyVideos.tsx';
 import { BodyMap } from './BodyMap.tsx';
 import { JOINT_KO, LENGTH_KO, MUSCLE_KO } from '../labels.ts';
 import { useStore } from '../store.tsx';
@@ -102,6 +103,10 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
             </div>
           </div>
 
+          <a className="btn block" href={youtubeSearch(ex.nameKo)} target="_blank" rel="noopener noreferrer">
+            ▶ 유튜브에서 자세 영상 보기
+          </a>
+
           <div className="card gold">
             <b>🎯 여기에 자극이 와야 해요</b>
             <p className="small" style={{ marginTop: 4 }}>{g.feel}</p>
@@ -132,6 +137,8 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
               🔬 {ex.primary.map((m) => MUSCLE_INFO[m].lengthNote).filter(Boolean).join(' / ')}
             </div>
           )}
+
+          <MyVideos exerciseId={ex.id} />
 
           <div className="card">
             <b>📈 내 기록</b>
@@ -219,4 +226,10 @@ export function MuscleDetail({ muscle, onClose, onOpenExercise, level }: {
       )}
     </Sheet>
   );
+}
+
+/** 유튜브 검색 결과로 연결 (영상을 가져오지 않고 링크만 걸어 저작권·용량 문제 없음) */
+function youtubeSearch(nameKo: string): string {
+  const q = nameKo.replace(/\s*\(.*?\)\s*/g, ' ').trim() + ' 자세';
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
 }

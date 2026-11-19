@@ -5,8 +5,8 @@ import { BodyMap } from '../components/BodyMap.tsx';
 import { ExerciseList } from '../components/ExerciseSheets.tsx';
 import { useGuide } from '../components/Guide.tsx';
 import { MUSCLE_KO } from '../labels.ts';
-import { completedSessions, recovery } from '../logic.ts';
-import { muscleLevels } from '../game.ts';
+import { recovery } from '../logic.ts';
+import { levelsOf } from '../game.ts';
 
 /** 근육 탭: 부위별 레벨·회복도 + 근육/운동 도감 */
 export function Muscles() {
@@ -14,7 +14,7 @@ export function Muscles() {
   const [view, setView] = useState<'level' | 'recovery'>('level');
   const [tab, setTab] = useState<'muscle' | 'exercise'>('muscle');
   const guide = useGuide();
-  const levels = muscleLevels(completedSessions(data));
+  const levels = levelsOf(data);
   const rec = recovery(data);
   const maxLv = Math.max(2, ...ALL_MUSCLES.map((m) => levels[m].level));
   const heat = Object.fromEntries(ALL_MUSCLES.map((m) => [m,

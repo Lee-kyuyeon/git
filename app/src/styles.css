@@ -93,6 +93,7 @@ h1, h2, h3, p, ol, ul { margin: 0; }
 
 /* 버튼 */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 50px; padding: 0 18px; border-radius: 12px; font-weight: 850; background: var(--surface); border: 2px solid var(--line); box-shadow: var(--shadow-sm); }
+a.btn { text-decoration: none; color: inherit; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); }
 .btn.gold { background: var(--gold); color: var(--gold-ink); }
 .btn.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--muted); }

@@ -39,6 +39,13 @@ export function muscleXp(sets: XpSet[]): Record<Muscle, number> {
   return out;
 }
 
+/** 부위별 fractional 세트 (주동근 1, 보조근 0.5, RPE<7은 절반) = XP / XP_PRIMARY */
+export function muscleVolume(sets: XpSet[]): Record<Muscle, number> {
+  const xp = muscleXp(sets);
+  for (const m of ALL_MUSCLES) xp[m] /= XP_PRIMARY;
+  return xp;
+}
+
 /** 레벨 L → L+1에 필요한 XP. 레벨이 오를수록 조금씩 더 필요 */
 export function xpToNext(level: number): number {
   return 100 + 40 * (level - 1);
@@ -79,6 +86,9 @@ export const REGIONS: Record<Region, { name: string; muscles: Muscle[] }> = {
   legs: { name: '하체', muscles: ['quads', 'hamstrings', 'glutes'] },
 };
 
+/** 겹치는 자극(스쿼트 = 대퇴사두+둔근, 프레스 = 전면+측면 삼각근)을 고려한 그룹 세트 가중치 */
+export const REGION_WEIGHT: Record<Region, number> = { chest: 1, back: 1, shoulders: 0.8, arms: 1, legs: 0.7 };
+
 export function regionOf(m: Muscle): Region | undefined {
   return (Object.keys(REGIONS) as Region[]).find((r) => REGIONS[r].muscles.includes(m));
 }
@@ -112,10 +122,10 @@ export function weeklyQuests(program: Program, daysPerWeek: number, week: WeekSt
   quests.push(mk('attendance', `이번 주 ${daysPerWeek}회 운동`, 'attendance', daysPerWeek, week.sessions, 100));
   for (const r of Object.keys(REGIONS) as Region[]) {
     const muscles = REGIONS[r].muscles;
-    // 그룹 목표 = 구성 부위 목표의 합. 단, 겹치는 자극(스쿼트 = 대퇴사두+둔근)을 고려해 하체는 70%만
-    const raw = muscles.reduce((a, m) => a + program.weeklyTargets[m], 0) * (r === 'legs' ? 0.7 : r === 'shoulders' ? 0.8 : 1);
+    // 그룹 목표 = 구성 부위 목표의 합 × 겹침 가중치 (하체 70%, 어깨 80%)
+    const raw = muscles.reduce((a, m) => a + program.weeklyTargets[m], 0) * REGION_WEIGHT[r];
     const target = Math.max(2, Math.round(raw));
-    const progress = muscles.reduce((a, m) => a + week.volume[m], 0) * (r === 'legs' ? 0.7 : r === 'shoulders' ? 0.8 : 1);
+    const progress = muscles.reduce((a, m) => a + week.volume[m], 0) * REGION_WEIGHT[r];
     quests.push({ ...mk(`vol-${r}`, `${REGIONS[r].name} ${target}세트`, 'volume', target, Math.round(progress * 2) / 2, 50), region: r });
   }
   quests.push(mk('pr', '개인 기록 1개 경신', 'pr', 1, week.prs, 50));

@@ -1,4 +1,4 @@
-import { EXTRA_GUIDES } from './exercisesExtra.ts';
+import { EXTRA_GUIDES } from './exercisesExtraGuides.ts';
 
 /**
  * 종목별 수행 가이드. 일반적으로 통용되는 운동 지도 요령을 정리한 것이며 의료 조언이 아닙니다.
