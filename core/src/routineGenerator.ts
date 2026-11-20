@@ -1,5 +1,5 @@
 import type { Equipment, Exercise, Goal, Muscle, PlannedExercise, Profile, Program, ProgramDay } from './types.ts';
-import { ALL_MUSCLES } from './types.ts';
+import { ALL_MUSCLES, MACHINES } from './types.ts';
 import { EXERCISES } from './exercises.ts';
 
 /*
@@ -138,7 +138,7 @@ export function jointConflicts(ex: Exercise, profile: Profile): Profile['injurie
 
 function loadability(e: Exercise): number {
   if (e.equipment.some((q) => q === 'barbell' || q === 'dumbbell' || q === 'kettlebell')) return 1;
-  if (e.equipment.some((q) => q === 'cable' || q === 'machine')) return 0.8;
+  if (e.equipment.some((q) => q === 'cable' || q === 'latPulldown' || MACHINES.includes(q))) return 0.8;
   return 0.3;
 }
 

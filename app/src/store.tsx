@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { get, set } from 'idb-keyval';
-import type { PlannedExercise, Profile, Program } from '@core';
+import { delMany, get, keys, set } from 'idb-keyval';
+import { MACHINES, type Equipment, type PlannedExercise, type Profile, type Program } from '@core';
 
 export interface LoggedSet {
   weightKg: number;
@@ -70,9 +70,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     get<AppData>(KEY)
-      .then((d) => { if (d) setData({ ...EMPTY, ...d, settings: { ...EMPTY.settings, ...d.settings } }); })
+      .then((d) => { if (d) setData(migrate({ ...EMPTY, ...d, settings: { ...EMPTY.settings, ...d.settings } })); })
       .catch(() => {})
       .finally(() => setLoaded(true));
+    // 없앤 '내 자세 영상' 기능이 남긴 영상 정리 (videos:<종목> 키)
+    keys().then((ks) => delMany(ks.filter((k) => typeof k === 'string' && k.startsWith('videos:')))).catch(() => {});
     // 저장 공간 자동 삭제 방지 요청 (지원 브라우저만)
     navigator.storage?.persist?.().catch(() => {});
   }, []);
@@ -118,6 +120,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return <Ctx.Provider value={{ data, loaded, update, replaceAll }}>{children}</Ctx.Provider>;
+}
+
+/** 예전 기구 체계('machine' 하나)로 저장된 설정을 개별 기구로 변환 */
+export function migrate(d: AppData): AppData {
+  const eq = d.profile?.equipment as string[] | undefined;
+  if (!d.profile || !eq || !eq.includes('machine')) return d;
+  const next = new Set<string>(eq.filter((q) => q !== 'machine'));
+  MACHINES.forEach((m) => next.add(m));
+  if (eq.includes('barbell')) next.add('squatRack');
+  if (eq.includes('cable')) next.add('latPulldown');
+  if (eq.includes('pullupBar')) next.add('dipStation');
+  return { ...d, profile: { ...d.profile, equipment: [...next] as Equipment[] } };
 }
 
 export function useStore(): Store {

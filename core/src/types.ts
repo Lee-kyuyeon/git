@@ -17,8 +17,24 @@ export const ALL_MUSCLES: Muscle[] = [
 ];
 
 export type Equipment =
-  | 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'kettlebell'
-  | 'band' | 'pullupBar' | 'bench' | 'bodyweight';
+  | 'barbell' | 'squatRack' | 'dumbbell' | 'kettlebell' | 'bench'
+  | 'pullupBar' | 'dipStation' | 'band'
+  | 'cable' | 'latPulldown'
+  | 'legPress' | 'hackSquat' | 'legExtension' | 'legCurl' | 'hipMachine' | 'calfMachine'
+  | 'chestPressMachine' | 'shoulderPressMachine' | 'pecDeck' | 'rowMachine'
+  | 'bodyweight';
+
+/** 기구식 머신 (무게가 핀으로 조절되는 고정 궤도 기구) */
+export const MACHINES: Equipment[] = [
+  'legPress', 'hackSquat', 'legExtension', 'legCurl', 'hipMachine', 'calfMachine',
+  'chestPressMachine', 'shoulderPressMachine', 'pecDeck', 'rowMachine',
+];
+
+/** 사용자가 고를 수 있는 모든 기구 (맨몸은 항상 포함이라 제외) */
+export const ALL_EQUIPMENT: Equipment[] = [
+  'barbell', 'squatRack', 'dumbbell', 'kettlebell', 'bench', 'pullupBar', 'dipStation', 'band',
+  'cable', 'latPulldown', ...MACHINES,
+];
 
 export type Joint = 'shoulder' | 'lowerBack' | 'knee' | 'wrist' | 'elbow' | 'hip' | 'neck';
 
