@@ -5,9 +5,9 @@ import {
 } from '@core';
 import { Chips, LineChart, Sheet } from './ui.tsx';
 import { Anatomy3D } from './Anatomy3D.tsx';
-import { MyVideos } from './MyVideos.tsx';
 import { BodyMap } from './BodyMap.tsx';
-import { JOINT_KO, LENGTH_KO, MUSCLE_KO } from '../labels.ts';
+import { EQUIPMENT_KO, JOINT_KO, LENGTH_KO, MUSCLE_KO } from '../labels.ts';
+import { EquipmentIcon } from './EquipmentIcon.tsx';
 import { useStore } from '../store.tsx';
 import { completedSessions, e1rmHistory, fmtDate, fmtKg, lastTwo } from '../logic.ts';
 
@@ -78,6 +78,16 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
             <div className="small muted">{ex.nameEn} · {ex.mechanic === 'compound' ? '다관절' : '단관절'} · {LENGTH_KO[ex.lengthBias]}</div>
           </div>
 
+          {ex.equipment.some((q) => q !== 'bodyweight') && (
+            <div className="row wrap" style={{ gap: 8 }}>
+              {ex.equipment.filter((q): q is Exclude<typeof q, 'bodyweight'> => q !== 'bodyweight').map((q) => (
+                <span key={q} className="tag" style={{ padding: '2px 8px 2px 2px', gap: 4 }}>
+                  <EquipmentIcon id={q} size={22} />{EQUIPMENT_KO[q]}
+                </span>
+              ))}
+            </div>
+          )}
+
           {conflicts.length > 0 && (
             <div className="card flat small" style={{ background: '#ffe4bd', color: '#6b3d00' }}>
               ⚠️ {conflicts.map((j) => JOINT_KO[j]).join('·')}에 부담이 갈 수 있어요. 가벼운 무게, 통증 없는 범위로 하세요.
@@ -137,8 +147,6 @@ export function ExerciseDetail({ id, onClose, onSwap, onOpenMuscle }: {
               🔬 {ex.primary.map((m) => MUSCLE_INFO[m].lengthNote).filter(Boolean).join(' / ')}
             </div>
           )}
-
-          <MyVideos exerciseId={ex.id} />
 
           <div className="card">
             <b>📈 내 기록</b>

@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ALL_MUSCLES, EXERCISE_BY_ID, EXERCISES, alternativesFor, bestE1RM, chooseSplit, coldStartWeight,
+  ALL_EQUIPMENT, ALL_MUSCLES, EXERCISE_BY_ID, EXERCISES, alternativesFor, bestE1RM, chooseSplit, coldStartWeight,
   estimate1RM, estimateSeconds, generateProgram, painDuringSet, painNextDay, recommendNext,
   recoveryByMuscle, warmupSets, weeklyStreak, weeklyTargets, weeklyVolume,
   type Muscle, type PlannedExercise, type Profile,
 } from '../src/index.ts';
 
-const GYM = ['barbell', 'dumbbell', 'machine', 'cable', 'bench', 'pullupBar'] as const;
+const GYM = ALL_EQUIPMENT;
 const gymProfile: Profile = {
   goal: 'hypertrophy', experience: 'intermediate', daysPerWeek: 4, minutesPerSession: 60,
   equipment: [...GYM], injuries: [],
@@ -334,4 +334,19 @@ test('가이드: 모든 종목에 준비·동작·자극·실수가 있음', () 
 
 test('근육 정보: 16개 부위 모두', () => {
   for (const m of ALL_MUSCLES) assert.ok(MUSCLE_INFO[m].anatomy && MUSCLE_INFO[m].actions.length, m);
+});
+
+test('기구: 고를 수 있는 모든 기구가 최소 1개 종목에 쓰임', () => {
+  for (const q of ALL_EQUIPMENT) assert.ok(EXERCISES.some((e) => e.equipment.includes(q)), q);
+});
+
+test('기구: 작은 헬스장(덤벨·벤치·케이블·랫풀다운·철봉)도 주요 부위 루틴 생성', () => {
+  const small: Profile = { ...gymProfile, equipment: ['dumbbell', 'bench', 'cable', 'latPulldown', 'pullupBar'] };
+  const p = generateProgram(small);
+  const v = weeklyVolume(p);
+  for (const m of MAJOR) assert.ok(v[m].sets >= p.weeklyTargets[m] * 0.5, `${m}: ${v[m].sets}`);
+  for (const d of p.days) for (const pe of d.exercises) {
+    const ex = EXERCISE_BY_ID.get(pe.exerciseId)!;
+    assert.ok(ex.equipment.every((q) => q === 'bodyweight' || small.equipment.includes(q)), ex.id);
+  }
 });
