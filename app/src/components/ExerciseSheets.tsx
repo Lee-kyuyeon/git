@@ -241,3 +241,19 @@ function youtubeSearch(nameKo: string): string {
   const q = nameKo.replace(/\s*\(.*?\)\s*/g, ' ').trim() + ' 자세';
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
 }
+
+/** 운동 화면 안에서 바로 보는 짧은 가이드: 준비 → 동작 → 자극 위치 */
+export function InlineGuide({ id }: { id: string }) {
+  const g = GUIDES[id];
+  if (!g) return null;
+  return (
+    <div className="inline-guide">
+      <div className="tiny bold muted">준비</div>
+      <p className="small">{g.setup.join(' · ')}</p>
+      <div className="tiny bold muted" style={{ marginTop: 8 }}>동작</div>
+      <ol className="steps-list small" style={{ marginTop: 4 }}>{g.steps.map((x) => <li key={x}>{x}</li>)}</ol>
+      <div className="small" style={{ marginTop: 8 }}>🎯 <b>{g.feel}</b></div>
+      {g.mistakes[0] && <div className="small muted" style={{ marginTop: 4 }}>❌ 피하기: {g.mistakes.join(', ')}</div>}
+    </div>
+  );
+}

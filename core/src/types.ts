@@ -89,6 +89,8 @@ export interface Profile {
    * %1RM별 반복 가능 횟수도 성별 영향이 작음(Nuzzo 외 메타회귀). 강조 부위는 focusMuscles로 본인이 고릅니다.
    */
   sex?: 'male' | 'female' | 'unspecified';
+  /** 체중(kg, 선택). 추천 시작 무게 계산에만 사용 */
+  bodyWeightKg?: number;
 }
 
 export interface PlannedExercise {

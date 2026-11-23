@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { EXERCISE_BY_ID, setXp } from '@core';
+import { EXERCISE_BY_ID, isBodyweightExercise, setXp, weightUnitLabel } from '@core';
 import { useStore, type LoggedSet, type Session } from '../store.tsx';
 import { NumInput, Sheet } from '../components/ui.tsx';
+const InlineGuide = lazy(() => import('../components/ExerciseSheets.tsx').then((m) => ({ default: m.InlineGuide })));
 const ExerciseDetail = lazy(() => import('../components/ExerciseSheets.tsx').then((m) => ({ default: m.ExerciseDetail })));
 const ExercisePicker = lazy(() => import('../components/ExerciseSheets.tsx').then((m) => ({ default: m.ExercisePicker })));
 import { sessionXp } from '../game.ts';
@@ -24,6 +25,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
   const [infoFor, setInfoFor] = useState<{ ei: number; id: string } | null>(null);
   const [picker, setPicker] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [howOpen, setHowOpen] = useState<Set<number>>(() => new Set(done.length === 0 ? [0] : []));
   const [pop, setPop] = useState<{ k: number; text: string } | null>(null);
   const xpNow = sessionXp(s).total;
   const alerted = useRef<number | undefined>(undefined);
@@ -128,6 +130,18 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
       </div>
 
       <div className="stack">
+        {done.length === 0 && !data.settings.coachSeen && (
+          <div className="card coach small">
+            <b>👋 첫 운동 사용법</b>
+            <ol>
+              <li><b>무게·횟수</b>는 추천값이 들어가 있어요. 들어 보고 너무 쉽거나 무거우면 숫자를 눌러 바꾸세요</li>
+              <li>한 세트를 끝내면 오른쪽 <b>✓</b>를 누르세요 → 휴식 타이머가 시작돼요</li>
+              <li>타이머가 끝나면(소리·음성) 다음 세트. ✓를 <b>길게</b> 누르면 쉬웠는지·힘들었는지 기록돼요</li>
+              <li>동작을 모르면 <b>❓ 어떻게 해요?</b>, 그림·영상은 <b>🧍 자세히</b></li>
+            </ol>
+            <button className="btn sm" style={{ marginTop: 10 }} onClick={() => update((d) => ({ ...d, settings: { ...d.settings, coachSeen: true } }))}>알겠어요</button>
+          </div>
+        )}
         {s.exercises.length === 0 && <div className="empty">아래 버튼으로 종목을 추가하세요</div>}
         {s.exercises.map((e, ei) => {
           const ex = EXERCISE_BY_ID.get(e.exerciseId)!;
@@ -136,17 +150,31 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
           return (
             <div key={`${e.exerciseId}-${ei}`} className="ex-card">
               <div className="ex-head">
-                <div className="row between">
-                  <button className="h2" style={{ textAlign: 'left' }} onClick={() => setInfoFor({ ei, id: e.exerciseId })}>{ex.nameKo} <span className="muted small">ⓘ</span></button>
-                  <span className="small muted num">{e.plan.repMin}-{e.plan.repMax}회 · RPE {e.plan.targetRpe}</span>
+                <div className="row between" style={{ alignItems: 'flex-start' }}>
+                  <button className="h2" style={{ textAlign: 'left' }} onClick={() => setInfoFor({ ei, id: e.exerciseId })}>{ex.nameKo}</button>
+                  <span className="tag num" style={{ flexShrink: 0 }}>{e.plan.repMin}-{e.plan.repMax}회</span>
                 </div>
-                <div className="row wrap" style={{ marginTop: 6, gap: 6 }}>
-                  {e.plan.caution && <span className="tag warn">{e.plan.caution.map((j) => JOINT_KO[j]).join('·')} 주의 · 통증 없는 범위로</span>}
-                  {e.reason && <span className="small muted">{e.reason}</span>}
+                <div className="small" style={{ marginTop: 4 }}>
+                  🎯 <b>{ex.primary.map((m) => MUSCLE_KO[m]).join('·')}</b>
+                  {ex.secondary.length > 0 && <span className="muted"> · 보조 {ex.secondary.map((m) => MUSCLE_KO[m]).join('·')}</span>}
                 </div>
+                <div className="small muted" style={{ marginTop: 2 }}>💪 {effortText(e.plan.targetRpe)}</div>
+                {e.plan.caution && <div style={{ marginTop: 6 }}><span className="tag warn">{e.plan.caution.map((j) => JOINT_KO[j]).join('·')} 주의 · 통증 없는 범위로</span></div>}
+                {e.reason && <div className="small" style={{ marginTop: 6, color: 'var(--accent)', fontWeight: 700 }}>{e.reason}</div>}
+                <div className="row" style={{ marginTop: 8, gap: 6 }}>
+                  <button className="btn sm grow" aria-expanded={howOpen.has(ei)} onClick={() => setHowOpen((o) => { const n = new Set(o); if (n.has(ei)) n.delete(ei); else n.add(ei); return n; })}>
+                    {howOpen.has(ei) ? '▲ 접기' : '❓ 어떻게 해요?'}
+                  </button>
+                  <button className="btn sm grow" onClick={() => setInfoFor({ ei, id: e.exerciseId })}>🧍 자세히 (3D·영상)</button>
+                </div>
+                {howOpen.has(ei) && (
+                  <Suspense fallback={<div className="small muted" style={{ marginTop: 8 }}>불러오는 중…</div>}>
+                    <InlineGuide id={e.exerciseId} />
+                  </Suspense>
+                )}
               </div>
               {data.notes[e.exerciseId] && <div className="note">📝 {data.notes[e.exerciseId]}</div>}
-              <div className="set-grid head"><span>세트</span><span>지난번</span><span style={{ textAlign: 'center' }}>kg</span><span style={{ textAlign: 'center' }}>회</span><span /></div>
+              <div className="set-grid head"><span>세트</span><span>지난번</span><span style={{ textAlign: 'center' }}>{weightUnitLabel(ex)}</span><span style={{ textAlign: 'center' }}>회</span><span /></div>
               {e.sets.map((st, si) => {
                 const no = st.isWarmup ? 'W' : String(++workNo);
                 const p = st.isWarmup ? undefined : prev[workNo - 1];
@@ -154,7 +182,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
                   <div key={si} className={`set-grid ${st.done ? 'done' : ''} ${st.isWarmup ? 'warm' : ''}`}>
                     <span className="set-no">{no}</span>
                     <span className="prev">{p ? `${fmtKg(p.weightKg)}×${p.reps}` : st.isWarmup ? '웜업' : '-'}</span>
-                    <NumInput decimal label={`${no}세트 무게`} value={st.weightKg} onChange={(n) => editValue(ei, si, 'weightKg', n)} />
+                    <NumInput decimal label={`${no}세트 무게`} value={st.weightKg} placeholder={isBodyweightExercise(ex) ? '맨몸' : '0'} onChange={(n) => editValue(ei, si, 'weightKg', n)} />
                     <NumInput label={`${no}세트 횟수`} value={st.reps} onChange={(n) => editValue(ei, si, 'reps', Math.round(n))} />
                     <button className={`check ${st.done ? 'on' : ''}`} aria-label={`${no}세트 완료`} aria-pressed={st.done}
                       onPointerDown={() => onDown(ei, si)} onPointerUp={onCancel} onPointerLeave={onCancel} onPointerCancel={onCancel}
@@ -234,7 +262,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
               if (i !== ei) return [y];
               const doneSets = y.sets.filter((st) => st.done);
               const remaining = Math.max(1, y.sets.filter((st) => !st.done && !st.isWarmup).length);
-              const next = buildExercise({ ...freePlan(newId, data.profile), sets: remaining, repMin: y.plan.repMin, repMax: y.plan.repMax, restSec: y.plan.restSec }, done);
+              const next = buildExercise({ ...freePlan(newId, data.profile), sets: remaining, repMin: y.plan.repMin, repMax: y.plan.repMax, restSec: y.plan.restSec }, done, data.profile);
               // 이미 끝낸 세트는 원래 종목에 남기고, 남은 세트만 새 종목으로 (기록 손실 방지)
               return doneSets.length ? [{ ...y, sets: doneSets }, next] : [next];
             }),
@@ -243,7 +271,7 @@ export function Workout({ onMinimize, onFinished }: { onMinimize: () => void; on
         }} />
 
       <ExercisePicker open={picker} profile={data.profile} onClose={() => setPicker(false)} onPick={(id) => {
-        patch((x) => ({ ...x, exercises: [...x.exercises, buildExercise(freePlan(id, data.profile), done)] }));
+        patch((x) => ({ ...x, exercises: [...x.exercises, buildExercise(freePlan(id, data.profile), done, data.profile)] }));
         setPicker(false);
       }} />
       </Suspense>
@@ -263,4 +291,11 @@ function mmss(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/** RPE를 쉬운 말로 */
+function effortText(rpe: number): string {
+  if (rpe >= 9) return '1회 정도 더 할 수 있을 만큼 힘들게';
+  if (rpe >= 8) return '2회 정도 더 할 수 있을 만큼 (마지막 2회가 힘들게)';
+  return '3회 이상 여유 있게, 자세에 집중';
 }

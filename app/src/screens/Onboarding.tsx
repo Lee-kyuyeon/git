@@ -96,11 +96,18 @@ export function Onboarding({ onDone, editing }: { onDone: () => void; editing?: 
               <Chips multi value={p.focusMuscles ?? []} onChange={(v: Muscle[]) => set('focusMuscles', v)}
                 options={ALL_MUSCLES.filter((m) => m !== 'forearms').map((m) => ({ value: m, label: MUSCLE_KO[m] }))} />
             </div>
-            <div className="section-label">성별 (선택 · 통계용)</div>
+            <div className="section-label">체중 (선택)</div>
+            <div className="row" style={{ marginTop: 8 }}>
+              <input inputMode="decimal" placeholder="예: 70" style={{ maxWidth: 120 }} value={p.bodyWeightKg ?? ''}
+                onChange={(e) => { const n = Number(e.target.value.replace(',', '.')); set('bodyWeightKg', n > 20 && n < 300 ? n : undefined); }} />
+              <span className="small muted">kg · 처음 추천 무게 계산에만 써요</span>
+            </div>
+            <div className="section-label">성별 (선택)</div>
             <div style={{ marginTop: 8 }}>
               <Chips value={p.sex ?? 'unspecified'} onChange={(v) => set('sex', v)}
                 options={[{ value: 'female', label: '여성' }, { value: 'male', label: '남성' }, { value: 'unspecified', label: '밝히지 않음' }]} />
             </div>
+            <p className="tiny muted" style={{ marginTop: 6 }}>루틴은 성별과 관계없이 똑같이 짜요. 처음 추천 무게와 근육 그림 체형에만 반영돼요.</p>
           </div>
         </div>
       ),

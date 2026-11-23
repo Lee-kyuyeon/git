@@ -10,3 +10,4 @@ export * from './pain.ts';
 export * from './game.ts';
 export * from './muscleInfo.ts';
 export * from './exerciseGuide.ts';
+export * from './startWeight.ts';
