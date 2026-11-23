@@ -108,3 +108,20 @@ export function NumInput({ value, onChange, decimal, label, placeholder = '0' }:
       }} />
   );
 }
+
+/** − 값 + 스테퍼. 가운데 숫자를 누르면 직접 입력도 가능 */
+export function Stepper({ value, step, onChange, unit, label, decimal, min = 0, placeholder }: {
+  value: number; step: number; onChange: (n: number) => void; unit: string; label: string; decimal?: boolean; min?: number; placeholder?: string;
+}) {
+  const fix = (n: number) => Math.max(min, Math.round(n * 100) / 100);
+  return (
+    <div className="stepper">
+      <button className="step-btn" aria-label={`${label} ${step} 줄이기`} onClick={() => onChange(fix(value - step))}>−</button>
+      <div className="step-val">
+        <NumInput decimal={decimal} label={label} value={value} placeholder={placeholder} onChange={(n) => onChange(fix(n))} />
+        <span className="tiny muted">{unit}</span>
+      </div>
+      <button className="step-btn" aria-label={`${label} ${step} 늘리기`} onClick={() => onChange(fix(value + step))}>＋</button>
+    </div>
+  );
+}

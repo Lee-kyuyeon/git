@@ -60,7 +60,7 @@ export function startSession(d: AppData, dayIndex: number | null): Session {
   }
   const day = d.program.days[dayIndex]!;
   return {
-    id: uid(), startedAt: Date.now(), dayIndex, dayName: day.name,
+    id: uid(), startedAt: Date.now(), dayIndex, dayName: day.name, begun: false,
     exercises: day.exercises.map((p) => buildExercise(p, done, d.profile)),
   };
 }
