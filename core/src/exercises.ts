@@ -7,10 +7,10 @@ const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'calves']);
 
 const seeds: Seed[] = [
   // 가슴
-  { id: 'bb_bench_press', nameKo: '바벨 벤치프레스', nameEn: 'Barbell Bench Press', primary: ['chest'], secondary: ['triceps', 'frontDelts'], equipment: ['barbell', 'bench'], mechanic: 'compound', difficulty: 2, stressedJoints: ['shoulder', 'wrist'], lengthBias: 'mid', cues: ['견갑을 모으고 가슴을 연다', '바는 명치 위로 내린다', '발로 바닥을 민다'] },
+  { id: 'bb_bench_press', nameKo: '바벨 벤치프레스', nameEn: 'Barbell Bench Press', primary: ['chest'], secondary: ['triceps', 'frontDelts'], equipment: ['barbell', 'bench', 'squatRack'], mechanic: 'compound', difficulty: 2, stressedJoints: ['shoulder', 'wrist'], lengthBias: 'mid', cues: ['견갑을 모으고 가슴을 연다', '바는 명치 위로 내린다', '발로 바닥을 민다'] },
   { id: 'db_bench_press', nameKo: '덤벨 벤치프레스', nameEn: 'Dumbbell Bench Press', primary: ['chest'], secondary: ['triceps', 'frontDelts'], equipment: ['dumbbell', 'bench'], mechanic: 'compound', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'lengthened', cues: ['팔꿈치는 몸통과 45도', '가슴 옆까지 충분히 내린다'] },
   { id: 'incline_db_press', nameKo: '인클라인 덤벨 프레스', nameEn: 'Incline Dumbbell Press', primary: ['chest'], secondary: ['frontDelts', 'triceps'], equipment: ['dumbbell', 'bench'], mechanic: 'compound', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'lengthened' },
-  { id: 'machine_chest_press', nameKo: '머신 체스트프레스', nameEn: 'Machine Chest Press', primary: ['chest'], secondary: ['triceps', 'frontDelts'], equipment: ['machine'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
+  { id: 'machine_chest_press', nameKo: '머신 체스트프레스', nameEn: 'Machine Chest Press', primary: ['chest'], secondary: ['triceps', 'frontDelts'], equipment: ['chestPressMachine'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'push_up', nameKo: '푸시업', nameEn: 'Push-up', primary: ['chest'], secondary: ['triceps', 'frontDelts', 'core'], equipment: ['bodyweight'], mechanic: 'compound', difficulty: 1, stressedJoints: ['wrist'], lengthBias: 'mid', cues: ['머리부터 발끝까지 일직선', '가슴이 바닥에 닿을 듯 내린다'] },
   { id: 'cable_fly', nameKo: '케이블 플라이', nameEn: 'Cable Fly', primary: ['chest'], secondary: [], equipment: ['cable'], mechanic: 'isolation', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'mid' },
   { id: 'db_fly', nameKo: '덤벨 플라이', nameEn: 'Dumbbell Fly', primary: ['chest'], secondary: [], equipment: ['dumbbell', 'bench'], mechanic: 'isolation', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'lengthened' },
@@ -18,7 +18,7 @@ const seeds: Seed[] = [
 
   // 광배근
   { id: 'pull_up', nameKo: '풀업', nameEn: 'Pull-up', primary: ['lats'], secondary: ['biceps', 'upperBack'], equipment: ['pullupBar'], mechanic: 'compound', difficulty: 3, stressedJoints: ['shoulder', 'elbow'], lengthBias: 'lengthened', cues: ['가슴을 바에 가져간다는 느낌', '반동 없이'] },
-  { id: 'lat_pulldown', nameKo: '랫 풀다운', nameEn: 'Lat Pulldown', primary: ['lats'], secondary: ['biceps', 'upperBack'], equipment: ['cable'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened', cues: ['바를 쇄골 쪽으로 당긴다', '어깨를 으쓱하지 않는다'] },
+  { id: 'lat_pulldown', nameKo: '랫 풀다운', nameEn: 'Lat Pulldown', primary: ['lats'], secondary: ['biceps', 'upperBack'], equipment: ['latPulldown'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened', cues: ['바를 쇄골 쪽으로 당긴다', '어깨를 으쓱하지 않는다'] },
   { id: 'band_lat_pulldown', nameKo: '밴드 랫 풀다운', nameEn: 'Band Lat Pulldown', primary: ['lats'], secondary: ['biceps'], equipment: ['band'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
   { id: 'db_pullover', nameKo: '덤벨 풀오버', nameEn: 'Dumbbell Pullover', primary: ['lats'], secondary: ['chest', 'triceps'], equipment: ['dumbbell', 'bench'], mechanic: 'isolation', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'lengthened' },
   { id: 'straight_arm_pulldown', nameKo: '스트레이트 암 풀다운', nameEn: 'Straight-arm Pulldown', primary: ['lats'], secondary: [], equipment: ['cable'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
@@ -32,16 +32,16 @@ const seeds: Seed[] = [
   { id: 'db_shrug', nameKo: '덤벨 슈러그', nameEn: 'Dumbbell Shrug', primary: ['traps'], secondary: ['forearms'], equipment: ['dumbbell'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
 
   // 어깨
-  { id: 'ohp', nameKo: '오버헤드 프레스', nameEn: 'Overhead Press', primary: ['frontDelts'], secondary: ['triceps', 'sideDelts', 'core'], equipment: ['barbell'], mechanic: 'compound', difficulty: 2, stressedJoints: ['shoulder', 'lowerBack'], lengthBias: 'mid' },
+  { id: 'ohp', nameKo: '오버헤드 프레스', nameEn: 'Overhead Press', primary: ['frontDelts'], secondary: ['triceps', 'sideDelts', 'core'], equipment: ['barbell', 'squatRack'], mechanic: 'compound', difficulty: 2, stressedJoints: ['shoulder', 'lowerBack'], lengthBias: 'mid' },
   { id: 'db_shoulder_press', nameKo: '덤벨 숄더프레스', nameEn: 'Dumbbell Shoulder Press', primary: ['frontDelts'], secondary: ['triceps', 'sideDelts'], equipment: ['dumbbell'], mechanic: 'compound', difficulty: 1, stressedJoints: ['shoulder'], lengthBias: 'mid' },
-  { id: 'machine_shoulder_press', nameKo: '머신 숄더프레스', nameEn: 'Machine Shoulder Press', primary: ['frontDelts'], secondary: ['triceps', 'sideDelts'], equipment: ['machine'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
+  { id: 'machine_shoulder_press', nameKo: '머신 숄더프레스', nameEn: 'Machine Shoulder Press', primary: ['frontDelts'], secondary: ['triceps', 'sideDelts'], equipment: ['shoulderPressMachine'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'pike_push_up', nameKo: '파이크 푸시업', nameEn: 'Pike Push-up', primary: ['frontDelts'], secondary: ['triceps'], equipment: ['bodyweight'], mechanic: 'compound', difficulty: 2, stressedJoints: ['shoulder', 'wrist'], lengthBias: 'mid' },
   { id: 'db_lateral_raise', nameKo: '덤벨 사이드 레터럴 레이즈', nameEn: 'Dumbbell Lateral Raise', primary: ['sideDelts'], secondary: [], equipment: ['dumbbell'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'shortened', cues: ['팔꿈치를 살짝 굽힌다', '어깨 높이까지만'] },
   { id: 'cable_lateral_raise', nameKo: '케이블 레터럴 레이즈', nameEn: 'Cable Lateral Raise', primary: ['sideDelts'], secondary: [], equipment: ['cable'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened' },
   { id: 'band_lateral_raise', nameKo: '밴드 레터럴 레이즈', nameEn: 'Band Lateral Raise', primary: ['sideDelts'], secondary: [], equipment: ['band'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
   { id: 'face_pull', nameKo: '페이스 풀', nameEn: 'Face Pull', primary: ['rearDelts'], secondary: ['upperBack', 'traps'], equipment: ['cable'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'rear_delt_fly', nameKo: '벤트오버 리어 델트 플라이', nameEn: 'Bent-over Rear Delt Fly', primary: ['rearDelts'], secondary: ['upperBack'], equipment: ['dumbbell'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
-  { id: 'reverse_pec_deck', nameKo: '리버스 펙덱', nameEn: 'Reverse Pec Deck', primary: ['rearDelts'], secondary: ['upperBack'], equipment: ['machine'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
+  { id: 'reverse_pec_deck', nameKo: '리버스 펙덱', nameEn: 'Reverse Pec Deck', primary: ['rearDelts'], secondary: ['upperBack'], equipment: ['pecDeck'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'band_pull_apart', nameKo: '밴드 풀 어파트', nameEn: 'Band Pull-apart', primary: ['rearDelts'], secondary: ['upperBack'], equipment: ['band'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
 
   // 팔
@@ -58,26 +58,26 @@ const seeds: Seed[] = [
   { id: 'band_pushdown', nameKo: '밴드 푸시다운', nameEn: 'Band Pushdown', primary: ['triceps'], secondary: [], equipment: ['band'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
 
   // 대퇴사두
-  { id: 'bb_squat', nameKo: '바벨 백스쿼트', nameEn: 'Barbell Back Squat', primary: ['quads', 'glutes'], secondary: ['adductors', 'core'], equipment: ['barbell'], mechanic: 'compound', difficulty: 3, stressedJoints: ['knee', 'lowerBack'], lengthBias: 'lengthened', cues: ['무릎은 발끝 방향', '허리 중립 유지', '고관절과 무릎을 함께 접는다'] },
+  { id: 'bb_squat', nameKo: '바벨 백스쿼트', nameEn: 'Barbell Back Squat', primary: ['quads', 'glutes'], secondary: ['adductors', 'core'], equipment: ['barbell', 'squatRack'], mechanic: 'compound', difficulty: 3, stressedJoints: ['knee', 'lowerBack'], lengthBias: 'lengthened', cues: ['무릎은 발끝 방향', '허리 중립 유지', '고관절과 무릎을 함께 접는다'] },
   { id: 'goblet_squat', nameKo: '고블릿 스쿼트', nameEn: 'Goblet Squat', primary: ['quads', 'glutes'], secondary: ['adductors', 'core'], equipment: ['dumbbell'], mechanic: 'compound', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'lengthened' },
-  { id: 'leg_press', nameKo: '레그 프레스', nameEn: 'Leg Press', primary: ['quads', 'glutes'], secondary: ['adductors'], equipment: ['machine'], mechanic: 'compound', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'mid' },
+  { id: 'leg_press', nameKo: '레그 프레스', nameEn: 'Leg Press', primary: ['quads', 'glutes'], secondary: ['adductors'], equipment: ['legPress'], mechanic: 'compound', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'mid' },
   { id: 'db_split_squat', nameKo: '불가리안 스플릿 스쿼트', nameEn: 'Bulgarian Split Squat', primary: ['quads', 'glutes'], secondary: ['adductors'], equipment: ['dumbbell', 'bench'], mechanic: 'compound', difficulty: 2, stressedJoints: ['knee'], lengthBias: 'lengthened' },
   { id: 'db_lunge', nameKo: '덤벨 런지', nameEn: 'Dumbbell Lunge', primary: ['quads', 'glutes'], secondary: ['adductors', 'hamstrings'], equipment: ['dumbbell'], mechanic: 'compound', difficulty: 2, stressedJoints: ['knee'], lengthBias: 'lengthened' },
   { id: 'bw_squat', nameKo: '맨몸 스쿼트', nameEn: 'Bodyweight Squat', primary: ['quads', 'glutes'], secondary: ['adductors'], equipment: ['bodyweight'], mechanic: 'compound', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'mid' },
   { id: 'box_squat', nameKo: '박스 스쿼트 (얕은 깊이)', nameEn: 'Box Squat (partial depth)', primary: ['quads', 'glutes'], secondary: [], equipment: ['bench'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'mid', cues: ['통증 없는 깊이의 박스/벤치를 쓴다', '앉았다가 천천히 일어선다'] },
   { id: 'wall_sit', nameKo: '월 싯', nameEn: 'Wall Sit', primary: ['quads'], secondary: ['glutes'], equipment: ['bodyweight'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid', cues: ['통증 없는 무릎 각도에서 버틴다', '반복 수 대신 초 단위 (반복 1회 = 3초)'] },
-  { id: 'leg_extension', nameKo: '레그 익스텐션', nameEn: 'Leg Extension', primary: ['quads'], secondary: [], equipment: ['machine'], mechanic: 'isolation', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'mid', cues: ['등받이를 뒤로 젖히면 대퇴직근이 더 늘어난다'] },
+  { id: 'leg_extension', nameKo: '레그 익스텐션', nameEn: 'Leg Extension', primary: ['quads'], secondary: [], equipment: ['legExtension'], mechanic: 'isolation', difficulty: 1, stressedJoints: ['knee'], lengthBias: 'mid', cues: ['등받이를 뒤로 젖히면 대퇴직근이 더 늘어난다'] },
 
   // 햄스트링·둔근·내전근
   { id: 'rdl', nameKo: '루마니안 데드리프트', nameEn: 'Romanian Deadlift', primary: ['hamstrings', 'glutes'], secondary: ['upperBack', 'forearms'], equipment: ['barbell'], mechanic: 'compound', difficulty: 2, stressedJoints: ['lowerBack'], lengthBias: 'lengthened', cues: ['엉덩이를 뒤로 뺀다', '바는 다리에 붙여 내린다'] },
   { id: 'db_rdl', nameKo: '덤벨 루마니안 데드리프트', nameEn: 'Dumbbell RDL', primary: ['hamstrings', 'glutes'], secondary: ['forearms'], equipment: ['dumbbell'], mechanic: 'compound', difficulty: 1, stressedJoints: ['lowerBack'], lengthBias: 'lengthened' },
   { id: 'single_leg_rdl', nameKo: '싱글 레그 루마니안 데드리프트', nameEn: 'Single-leg RDL', primary: ['hamstrings', 'glutes'], secondary: ['core'], equipment: ['bodyweight'], mechanic: 'compound', difficulty: 2, stressedJoints: [], lengthBias: 'lengthened' },
-  { id: 'seated_leg_curl', nameKo: '시티드 레그 컬', nameEn: 'Seated Leg Curl', primary: ['hamstrings'], secondary: [], equipment: ['machine'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened', cues: ['상체를 살짝 숙이면 햄스트링이 더 늘어난다'] },
-  { id: 'leg_curl', nameKo: '라잉 레그 컬', nameEn: 'Lying Leg Curl', primary: ['hamstrings'], secondary: [], equipment: ['machine'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
+  { id: 'seated_leg_curl', nameKo: '시티드 레그 컬', nameEn: 'Seated Leg Curl', primary: ['hamstrings'], secondary: [], equipment: ['legCurl'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened', cues: ['상체를 살짝 숙이면 햄스트링이 더 늘어난다'] },
+  { id: 'leg_curl', nameKo: '라잉 레그 컬', nameEn: 'Lying Leg Curl', primary: ['hamstrings'], secondary: [], equipment: ['legCurl'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'band_good_morning', nameKo: '밴드 굿모닝', nameEn: 'Band Good Morning', primary: ['hamstrings', 'glutes'], secondary: [], equipment: ['band'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
   { id: 'glute_bridge', nameKo: '글루트 브릿지', nameEn: 'Glute Bridge', primary: ['glutes'], secondary: ['hamstrings'], equipment: ['bodyweight'], mechanic: 'compound', difficulty: 1, stressedJoints: [], lengthBias: 'shortened' },
   { id: 'hip_thrust', nameKo: '바벨 힙 쓰러스트', nameEn: 'Barbell Hip Thrust', primary: ['glutes'], secondary: ['hamstrings', 'quads'], equipment: ['barbell', 'bench'], mechanic: 'compound', difficulty: 2, stressedJoints: [], lengthBias: 'shortened' },
-  { id: 'hip_adduction', nameKo: '힙 어덕션 머신', nameEn: 'Hip Adduction Machine', primary: ['adductors'], secondary: [], equipment: ['machine'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
+  { id: 'hip_adduction', nameKo: '힙 어덕션 머신', nameEn: 'Hip Adduction Machine', primary: ['adductors'], secondary: [], equipment: ['hipMachine'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'mid' },
   { id: 'copenhagen_plank', nameKo: '코펜하겐 플랭크', nameEn: 'Copenhagen Plank', primary: ['adductors'], secondary: ['core'], equipment: ['bench'], mechanic: 'isolation', difficulty: 2, stressedJoints: [], lengthBias: 'mid' },
   { id: 'calf_raise', nameKo: '카프 레이즈', nameEn: 'Calf Raise', primary: ['calves'], secondary: [], equipment: ['bodyweight'], mechanic: 'isolation', difficulty: 1, stressedJoints: [], lengthBias: 'lengthened', cues: ['계단 끝에서 뒤꿈치를 충분히 내린다', '바닥에서 1~2초 멈춘다'] },
 

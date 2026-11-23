@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { PAIN_DISCLAIMER } from '@core';
-import { EMPTY, useStore, type AppData } from '../store.tsx';
+import { EMPTY, migrate, useStore, type AppData } from '../store.tsx';
 import { Toggle } from '../components/ui.tsx';
 import { EXPERIENCE_KO, GOAL_KO, JOINT_KO, MUSCLE_KO, WORK_KO } from '../labels.ts';
 import { completedSessions, fmtDate } from '../logic.ts';
@@ -37,7 +37,7 @@ export function Me({ editProfile, openRoutine }: { editProfile: () => void; open
       const parsed = JSON.parse(await f.text()) as AppData;
       if (parsed.version !== 1 || !Array.isArray(parsed.sessions)) throw new Error('형식 오류');
       if (!confirm(`기록 ${parsed.sessions.length}개를 불러올까요? 지금 데이터는 덮어써져요.`)) return;
-      replaceAll({ ...EMPTY, ...parsed });
+      replaceAll(migrate({ ...EMPTY, ...parsed }));
       alert('불러왔어요');
     } catch {
       alert('백업 파일을 읽지 못했어요');
@@ -84,6 +84,7 @@ export function Me({ editProfile, openRoutine }: { editProfile: () => void; open
           {row('경력', EXPERIENCE_KO[p.experience].label)}
           {row('빈도', `주 ${p.daysPerWeek}회 · ${p.minutesPerSession}분`)}
           {row('일하는 방식', `${WORK_KO[p.workActivity ?? 'standing'].label}${p.shiftWork ? ' · 교대근무' : ''}`)}
+          {row('기구', p.equipment.length ? `${p.equipment.length}개` : '맨몸만')}
           {row('불편한 곳', p.injuries.length ? p.injuries.map((j) => JOINT_KO[j]).join(', ') : '없음')}
           {row('집중 부위', p.focusMuscles?.length ? p.focusMuscles.map((m) => MUSCLE_KO[m]).join(', ') : '없음')}
         </div>

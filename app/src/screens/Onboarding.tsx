@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import {
   ALL_MUSCLES, PAIN_DISCLAIMER, generateProgram, weeklyQuests,
-  type Equipment, type Experience, type Goal, type Joint, type Muscle, type Profile, type WorkActivity,
+  type Experience, type Goal, type Joint, type Muscle, type Profile, type WorkActivity,
 } from '@core';
 import { useStore } from '../store.tsx';
 import { Chips } from '../components/ui.tsx';
-import { EQUIPMENT_KO, EXPERIENCE_KO, GYM_PRESET, HOME_PRESET, JOINT_KO, MUSCLE_KO, WORK_KO } from '../labels.ts';
+import { EXPERIENCE_KO, GYM_PRESET, JOINT_KO, MUSCLE_KO, WORK_KO } from '../labels.ts';
+import { EquipmentPicker } from '../components/EquipmentPicker.tsx';
 import { CLASS_INFO } from '../game.ts';
 import { underCovered } from '../logic.ts';
 
@@ -22,7 +23,6 @@ export function Onboarding({ onDone, editing }: { onDone: () => void; editing?: 
   const [p, setP] = useState<Profile>(data.profile ?? DEFAULT);
   const [step, setStep] = useState(0);
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setP((x) => ({ ...x, [k]: v }));
-  const place = sameSet(p.equipment, GYM_PRESET) ? 'gym' : sameSet(p.equipment, HOME_PRESET) ? 'home' : 'custom';
   const program = useMemo(() => (step === 3 ? generateProgram(p) : null), [step, p]);
 
   const screens = [
@@ -62,19 +62,7 @@ export function Onboarding({ onDone, editing }: { onDone: () => void; editing?: 
             <div className="section-label">한 번에</div>
             <div style={{ marginTop: 8 }}><Chips value={p.minutesPerSession} onChange={(v) => set('minutesPerSession', v)} options={[30, 45, 60, 75, 90].map((n) => ({ value: n, label: `${n}분` }))} /></div>
           </div>
-          <div className="card">
-            <div className="section-label" style={{ marginTop: 0 }}>훈련장</div>
-            <div className="row" style={{ marginTop: 8 }}>
-              <button className={`chip ${place === 'gym' ? 'on' : ''}`} onClick={() => set('equipment', GYM_PRESET)}>🏢 헬스장</button>
-              <button className={`chip ${place === 'home' ? 'on' : ''}`} onClick={() => set('equipment', HOME_PRESET)}>🏠 집</button>
-            </div>
-            <div className="section-label">가진 장비</div>
-            <div style={{ marginTop: 8 }}>
-              <Chips multi value={p.equipment} onChange={(v: Equipment[]) => set('equipment', v)}
-                options={(Object.keys(EQUIPMENT_KO) as Array<keyof typeof EQUIPMENT_KO>).map((k) => ({ value: k, label: EQUIPMENT_KO[k] }))} />
-            </div>
-            <p className="tiny muted" style={{ marginTop: 8 }}>맨몸 운동은 항상 포함돼요.</p>
-          </div>
+          <EquipmentPicker value={p.equipment} onChange={(v) => set('equipment', v)} profile={p} />
         </div>
       ),
     },
@@ -177,8 +165,4 @@ export function Onboarding({ onDone, editing }: { onDone: () => void; editing?: 
       </div>
     </div>
   );
-}
-
-function sameSet<T>(a: T[], b: T[]): boolean {
-  return a.length === b.length && a.every((x) => b.includes(x));
 }
