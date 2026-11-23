@@ -350,3 +350,27 @@ test('기구: 작은 헬스장(덤벨·벤치·케이블·랫풀다운·철봉)�
     assert.ok(ex.equipment.every((q) => q === 'bodyweight' || small.equipment.includes(q)), ex.id);
   }
 });
+
+// ── 추천 시작 무게 ──
+import { isBodyweightExercise, isPerHand, suggestStartWeight } from '../src/index.ts';
+
+test('시작 무게: 무게를 쓰는 모든 종목에 0보다 큰 추천, 맨몸 종목은 0', () => {
+  for (const e of EXERCISES) {
+    const s = suggestStartWeight(e, { repMin: 8, repMax: 12 }, gymProfile);
+    if (isBodyweightExercise(e)) assert.equal(s.weightKg, 0, e.id);
+    else assert.ok(s.weightKg > 0, e.id);
+  }
+});
+
+test('시작 무게: 현실적인 범위와 보정 방향', () => {
+  const p: Profile = { ...gymProfile, experience: 'beginner', sex: 'male', bodyWeightKg: 75 };
+  const db = EXERCISE_BY_ID.get('db_bench_press')!;
+  const w = suggestStartWeight(db, { repMin: 8, repMax: 12 }, p).weightKg;
+  assert.ok(w >= 8 && w <= 16, `db bench ${w}`);
+  assert.ok(isPerHand(db));
+  const sq = suggestStartWeight(squat, { repMin: 8, repMax: 12 }, p).weightKg;
+  assert.ok(sq >= 35 && sq <= 60, `squat ${sq}`);
+  assert.ok(suggestStartWeight(squat, { repMin: 8, repMax: 12 }, { ...p, sex: 'female', bodyWeightKg: 55 }).weightKg < sq);
+  assert.ok(suggestStartWeight(squat, { repMin: 3, repMax: 5 }, p).weightKg > sq);
+  assert.ok(suggestStartWeight(squat, { repMin: 8, repMax: 12 }, { ...p, experience: 'advanced' }).weightKg > sq);
+});

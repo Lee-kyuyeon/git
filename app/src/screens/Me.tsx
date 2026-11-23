@@ -85,6 +85,7 @@ export function Me({ editProfile, openRoutine }: { editProfile: () => void; open
           {row('빈도', `주 ${p.daysPerWeek}회 · ${p.minutesPerSession}분`)}
           {row('일하는 방식', `${WORK_KO[p.workActivity ?? 'standing'].label}${p.shiftWork ? ' · 교대근무' : ''}`)}
           {row('기구', p.equipment.length ? `${p.equipment.length}개` : '맨몸만')}
+          {row('체중', p.bodyWeightKg ? `${p.bodyWeightKg}kg` : '입력 안 함')}
           {row('불편한 곳', p.injuries.length ? p.injuries.map((j) => JOINT_KO[j]).join(', ') : '없음')}
           {row('집중 부위', p.focusMuscles?.length ? p.focusMuscles.map((m) => MUSCLE_KO[m]).join(', ') : '없음')}
         </div>

@@ -92,13 +92,13 @@ export function LineChart({ points, height = 140 }: { points: Array<{ t: number;
 }
 
 /** 숫자 입력. "62." 처럼 입력 중인 소수점을 잃지 않도록 문자열 상태를 따로 둠 */
-export function NumInput({ value, onChange, decimal, label }: { value: number; onChange: (n: number) => void; decimal?: boolean; label: string }) {
+export function NumInput({ value, onChange, decimal, label, placeholder = '0' }: { value: number; onChange: (n: number) => void; decimal?: boolean; label: string; placeholder?: string }) {
   const [txt, setTxt] = useState(value ? String(value) : '');
   useEffect(() => {
     if ((Number(txt.replace(',', '.')) || 0) !== value) setTxt(value ? String(value) : '');
   }, [value]);
   return (
-    <input className="num-in" inputMode={decimal ? 'decimal' : 'numeric'} aria-label={label} value={txt} placeholder="0"
+    <input className="num-in" inputMode={decimal ? 'decimal' : 'numeric'} aria-label={label} value={txt} placeholder={placeholder}
       onFocus={(e) => e.target.select()}
       onChange={(e) => {
         const t = e.target.value.replace(/[^0-9.,]/g, '');

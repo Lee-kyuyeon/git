@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { delMany, get, keys, set } from 'idb-keyval';
-import { MACHINES, type Equipment, type PlannedExercise, type Profile, type Program } from '@core';
+import { EXERCISE_BY_ID, MACHINES, isBodyweightExercise, suggestStartWeight, type Equipment, type PlannedExercise, type Profile, type Program } from '@core';
 
 export interface LoggedSet {
   weightKg: number;
@@ -36,6 +36,8 @@ export interface Settings {
   sound: boolean;
   voice: boolean;
   lastBackupAt?: number;
+  /** 첫 운동 사용법 안내를 닫았는지 */
+  coachSeen?: boolean;
 }
 
 export interface AppData {
@@ -123,7 +125,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 }
 
 /** 예전 기구 체계('machine' 하나)로 저장된 설정을 개별 기구로 변환 */
-export function migrate(d: AppData): AppData {
+export function migrate(input: AppData): AppData {
+  const d = fillStartWeights(input);
   const eq = d.profile?.equipment as string[] | undefined;
   if (!d.profile || !eq || !eq.includes('machine')) return d;
   const next = new Set<string>(eq.filter((q) => q !== 'machine'));
@@ -132,6 +135,21 @@ export function migrate(d: AppData): AppData {
   if (eq.includes('cable')) next.add('latPulldown');
   if (eq.includes('pullupBar')) next.add('dipStation');
   return { ...d, profile: { ...d.profile, equipment: [...next] as Equipment[] } };
+}
+
+/** 추천 시작 무게가 생기기 전에 만든 진행 중 운동: 아직 안 한 0kg 종목에 추천 무게 채우기 */
+function fillStartWeights(d: AppData): AppData {
+  const a = d.active;
+  if (!a || !d.profile) return d;
+  let changed = false;
+  const exercises = a.exercises.map((e) => {
+    const ex = EXERCISE_BY_ID.get(e.exerciseId);
+    if (!ex || isBodyweightExercise(ex) || e.sets.some((x) => x.done || x.weightKg > 0)) return e;
+    const s = suggestStartWeight(ex, e.plan, d.profile!);
+    changed = true;
+    return { ...e, reason: s.note, sets: e.sets.map((x) => ({ ...x, weightKg: s.weightKg })) };
+  });
+  return changed ? { ...d, active: { ...a, exercises } } : d;
 }
 
 export function useStore(): Store {

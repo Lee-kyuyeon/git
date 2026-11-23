@@ -1,5 +1,5 @@
 import {
-  ALL_MUSCLES, EXERCISE_BY_ID, bestE1RM, coldStartWeight, incrementFor, recommendNext,
+  ALL_MUSCLES, EXERCISE_BY_ID, bestE1RM, incrementFor, recommendNext, suggestStartWeight,
   recoveryByMuscle, startOfWeek, warmupSets, weeklyStreak, weeklyVolume,
   type Muscle, type PerformedSet, type PlannedExercise, type Profile, type Program,
 } from '@core';
@@ -21,16 +21,20 @@ export function lastTwo(sessions: Session[], exerciseId: string): [LoggedSet[], 
   return [found[0] ?? [], found[1] ?? []];
 }
 
-export function buildExercise(plan: PlannedExercise, sessions: Session[]): SessionExercise {
+export function buildExercise(plan: PlannedExercise, sessions: Session[], profile?: Profile): SessionExercise {
   const ex = EXERCISE_BY_ID.get(plan.exerciseId)!;
   const [last, prev] = lastTwo(sessions, plan.exerciseId);
   const rec = recommendNext(ex, plan, last, prev);
-  const weight = rec.action === 'coldStart' ? coldStartWeight(ex, plan) : rec.weightKg;
+  // 첫 기록이면 체중·경력·목표 반복으로 추천 시작 무게 (프로필이 없으면 기본 체형 가정)
+  const start = rec.action === 'coldStart'
+    ? suggestStartWeight(ex, plan, profile ?? { goal: 'hypertrophy', experience: 'beginner', daysPerWeek: 3, minutesPerSession: 60, equipment: [], injuries: [] })
+    : undefined;
+  const weight = start ? start.weightKg : rec.weightKg;
   const work: LoggedSet[] = Array.from({ length: plan.sets }, () => ({ weightKg: weight, reps: rec.targetReps, done: false }));
   const warm = ex.mechanic === 'compound' && weight >= 40
     ? warmupSets(weight, incrementFor(ex)).map((w) => ({ ...w, done: false }))
     : [];
-  return { exerciseId: plan.exerciseId, plan, sets: [...warm, ...work], reason: rec.action === 'coldStart' ? '첫 기록이에요. 가볍게 시작해 보세요' : rec.reason };
+  return { exerciseId: plan.exerciseId, plan, sets: [...warm, ...work], reason: start ? start.note : rec.reason };
 }
 
 export function freePlan(exerciseId: string, profile?: Profile): PlannedExercise {
@@ -57,7 +61,7 @@ export function startSession(d: AppData, dayIndex: number | null): Session {
   const day = d.program.days[dayIndex]!;
   return {
     id: uid(), startedAt: Date.now(), dayIndex, dayName: day.name,
-    exercises: day.exercises.map((p) => buildExercise(p, done)),
+    exercises: day.exercises.map((p) => buildExercise(p, done, d.profile)),
   };
 }
 

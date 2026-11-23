@@ -232,3 +232,9 @@ a.btn { text-decoration: none; color: inherit; }
 .equip-card.on { background: var(--accent-soft); outline: 3px solid var(--accent); outline-offset: -1px; }
 .equip-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .equip-check { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid var(--ink); }
+
+/* 운동 화면 인라인 가이드·첫 운동 안내 */
+.inline-guide { margin-top: 10px; padding: 12px; border-radius: 12px; background: var(--surface-2); border: 2px dashed color-mix(in srgb, var(--line) 50%, transparent); }
+.coach { background: var(--gold); color: var(--gold-ink); }
+.coach ol { padding-left: 20px; margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.coach .btn { background: #fff; color: #1c1633; border-color: #1c1633; }
