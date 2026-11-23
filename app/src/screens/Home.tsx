@@ -10,6 +10,7 @@ import { CLASS_INFO, dayRegionGain, playerProgress, questsForWeek } from '../gam
 export function Home({ openWorkout, openRoutine }: { openWorkout: () => void; openRoutine: () => void }) {
   const { data, update } = useStore();
   const [pickDay, setPickDay] = useState(false);
+  const [allQuests, setAllQuests] = useState(false);
   const guide = useGuide();
   const program = data.program!;
   const profile = data.profile!;
@@ -71,13 +72,16 @@ export function Home({ openWorkout, openRoutine }: { openWorkout: () => void; op
               ))}
             </div>
             <div style={{ marginTop: 8 }}>
-              {day.exercises.map((e) => (
+              {day.exercises.slice(0, 4).map((e) => (
                 <button key={e.exerciseId} className="list-row" style={{ padding: '8px 0' }} onClick={() => guide.openExercise(e.exerciseId)}>
                   <span className="grow small">{EXERCISE_BY_ID.get(e.exerciseId)!.nameKo} {e.caution && <span className="tag warn">가볍게</span>}</span>
                   <span className="tiny muted num">{e.sets}×{e.repMin}-{e.repMax}</span>
                   <span className="muted small">ⓘ</span>
                 </button>
               ))}
+              {day.exercises.length > 4 && (
+                <div className="small muted" style={{ padding: '8px 0 0' }}>외 {day.exercises.length - 4}종목 · 시작하면 미리보기에서 전부 보고 바꿀 수 있어요</div>
+              )}
             </div>
             {tired.length > 0 && (
               <p className="small" style={{ marginTop: 8, color: 'var(--warn)', fontWeight: 700 }}>
@@ -96,11 +100,12 @@ export function Home({ openWorkout, openRoutine }: { openWorkout: () => void; op
         {/* 주간 퀘스트 */}
         <div className="card">
           <div className="row between">
-            <b>📜 이번 주 퀘스트</b>
+            <b>📜 이번 주 퀘스트 <span className="muted num">{quests.filter((q) => q.done).length}/{quests.length}</span></b>
             <span className={`tag ${cleared ? 'good' : ''}`}>{cleared ? '클리어!' : `${daysLeft}일 남음`}</span>
           </div>
           <div style={{ marginTop: 6 }}>
-            {quests.map((q) => (
+            {/* 기본은 남은 퀘스트 중 진행률 높은 3개만 (홈을 짧게) */}
+            {(allQuests ? quests : quests.filter((q) => !q.done).sort((a, b) => b.progress / b.target - a.progress / a.target).slice(0, 3)).map((q) => (
               <div key={q.id} className={`quest ${q.done ? 'done' : ''}`}>
                 <span className="box">{q.done ? '✓' : ''}</span>
                 <div className="grow">
@@ -114,7 +119,10 @@ export function Home({ openWorkout, openRoutine }: { openWorkout: () => void; op
               </div>
             ))}
           </div>
-          <p className="tiny muted" style={{ marginTop: 6 }}>출석 + 부위 퀘스트 4개를 깨면 주간 클리어 (+200XP)</p>
+          <button className="btn ghost sm block" style={{ marginTop: 4 }} onClick={() => setAllQuests((v) => !v)}>
+            {allQuests ? '접기 ▲' : `전체 퀘스트 보기 (${quests.length}) ▼`}
+          </button>
+          {allQuests && <p className="tiny muted">출석 + 부위 퀘스트 4개를 깨면 주간 클리어 (+200XP)</p>}
         </div>
 
         {needBackup && (

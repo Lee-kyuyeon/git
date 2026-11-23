@@ -238,3 +238,25 @@ a.btn { text-decoration: none; color: inherit; }
 .coach { background: var(--gold); color: var(--gold-ink); }
 .coach ol { padding-left: 20px; margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
 .coach .btn { background: #fff; color: #1c1633; border-color: #1c1633; }
+
+/* 운동 미리보기·한 종목씩 보기 */
+.thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; object-position: 50% 30%; background: #f3efe6; border: 2px solid var(--line); flex-shrink: 0; display: block; }
+.preview-row { display: flex; align-items: center; gap: 12px; padding: 12px; }
+.ex-dots { display: flex; gap: 6px; overflow-x: auto; padding: 2px; }
+.dot-btn { min-width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); font-weight: 900; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.dot-btn.on { background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow-sm); }
+.dot-btn.done { background: var(--good); color: #fff; }
+.focus-box { margin: 4px 14px 10px; padding: 14px; border-radius: 14px; background: var(--surface-2); border: 2px solid var(--line); }
+.rest-box { text-align: center; }
+.big-time { font-size: 56px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+.stepper { display: grid; grid-template-columns: 64px 1fr 64px; gap: 8px; align-items: center; }
+.step-btn { height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-size: 26px; font-weight: 900; box-shadow: var(--shadow-sm); touch-action: manipulation; }
+.step-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.step-val { display: flex; flex-direction: column; align-items: center; }
+.step-val .num-in { font-size: 30px; font-weight: 900; height: 56px; width: 100%; background: var(--surface); }
+.big-done { height: 60px; font-size: 19px; margin-top: 14px; }
+.mini-sets { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 4px; }
+.mini-set { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); font-size: 12px; }
+.mini-set.done { background: color-mix(in srgb, var(--good) 22%, var(--surface)); }
+.mini-set.cur { outline: 3px solid var(--accent); outline-offset: -1px; }
+.ex-help { padding: 0 14px 10px; }

@@ -30,6 +30,12 @@ export interface Session {
   /** 휴식 타이머 종료 시각 (ms). 경과 시간을 누적하지 않고 종료 시각으로 계산해야 백그라운드에서도 정확 */
   restEndsAt?: number;
   restTotal?: number;
+  /** false면 시작 전 미리보기 (종목 바꾸기·빼기). 없으면 시작된 운동 */
+  begun?: boolean;
+  /** 한 종목씩 보기에서 지금 보고 있는 종목 */
+  focusIndex?: number;
+  /** 방금 끝낸 세트 (휴식 중 난이도 기록용) */
+  lastDone?: { ei: number; si: number };
 }
 
 export interface Settings {
@@ -38,6 +44,8 @@ export interface Settings {
   lastBackupAt?: number;
   /** 첫 운동 사용법 안내를 닫았는지 */
   coachSeen?: boolean;
+  /** 운동 화면 보기 방식: 한 종목씩(기본) / 전체 목록 */
+  workoutView?: 'focus' | 'list';
 }
 
 export interface AppData {
